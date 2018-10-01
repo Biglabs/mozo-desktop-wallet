@@ -1,0 +1,1 @@
+# mozo-desktop-wallet
