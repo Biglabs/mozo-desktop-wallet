@@ -1,0 +1,179 @@
+{
+    "welcome": {
+      "lbWelcome": "Welcome to SOLO Signer",
+      "btnCreate": "Create New Wallet",
+      "btnImport": "Import Wallet",
+      "btnRestore": "Restore Encryted Wallet"
+    },
+    "home": {
+      "btnPair": "Pair Devices",
+      "btnPaper": "Paper Wallet",
+      "btnBackup": "Backup Wallet"
+    },
+    "security_pin": {
+      "lbTitle": "Security PIN",
+      "lbCreate": "Create a new PIN",
+      "lbConfirm": "Confirm PIN",
+      "lbEnter": "Enter PIN",
+      "lbCreateInterface": "Creating Interface",
+      "btnCLR": "CLR",
+      "btnDEL": "DEL"
+    },
+    "add_wallet": {
+      "lbTitle": "Add Wallet",
+      "lbPlease": "Please select the wallet you wish to active",
+      "lbWe": "We require you to active at least one wallet. Please note that additional wallets can be activated later time.",
+      "btnAddMore": "Add More Wallet"
+    },
+    "add_more_wallet": {
+      "lbTitle": "Add More Wallet",
+      "lbSearch": "Search for wallet you want",
+      "btnAdd": "Add"
+    },
+    "create_wallet": {
+      "lbTitle": "Create New Wallet",
+      "lbExpress": "Express",
+      "lbExpressDetail": "Select this option if you’d like to access your new SOLO Wallet quickly. Please note that you’ll always be able to customize at a later time.",
+      "lbCustom": "Custom",
+      "lbCustomDetail":"Select this option if you’d like to customize your wallet. You’ll be able to select your wallet Tokens and Currencies, set up a security PIN, and back up your wallet."
+    },
+    "import_wallet": {
+      "lbTitle": "Import/Restore Wallet",
+      "lbType": "Type in your wallet’s Backup Phrase in the correct sequence below to pair.",
+      "lbEnter": "Enter Backup Phrase",
+      "lbBetter": "OR BETTER YET",
+      "btnScan": "Scan QR Code"
+    },
+    "restore_wallet": {
+    },
+    "backup_wallet_encrypt": {
+
+    },
+    "backup_wallet_export": {
+
+    },
+    "backup_wallet_menu": {
+      "lbTitle": "BACKUP WALLET",
+      "btnBackup": "Backup Wallet",
+      "btnView": "View Backup Phrase",
+      "lbViewDetail": "Your Backup Phrase will be displayed as both a QR code and a string of random words.{'\n\n'} Make sure you view your Backup Phrase in private. Anyone with the following QR code and Backup Phrase can gain full access to your funds so DO NOT store them publicly or share with anyone.",
+      "btnHide": "hide"
+    },
+    "paper_wallet": {
+      "lbTitle": "PAPER WALLET",
+      "lbPaper": "Paper Wallet"
+    },
+    "paper_wallet_detail": {
+      "lbTitle": "PAPER WALLET",
+      "lbEnter": "Enter your Private Key or Scan QR code to transfer Paper Wallet faster.",
+      "lbEnterText": "Enter Private Key",
+      "lbBetter": "OR BETTER YET",
+      "btnScan": "Scan QR Code"
+    },
+    "paper_wallet_result": {
+      "lbTitle": "PAPER WALLET",
+      "lbLorem": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "btnPrint": "Print Out"
+    },
+    "backup_phrase_display": {
+      "lbTitle": "Backup Phrase",
+      "lbPleaseWrite": "Please write it down on a paper and keep it in a safe place as you would with paper money",
+      "lbIfYouLose": "If you lose your recovery phase, your wallet cannot be recovered.",
+      "btnStored": "I have safely stored recovery phrase",
+      "btnSkip": "Skip"
+    },
+    "backup_phrase_confirm": {
+      "lbTitle": "Backup Phrase",
+      "lbWhichOne": "Which one is {{wordIndex}} backup phrase?",
+      "lbPleaseTap": "Please tap each word in the correct order."
+    },
+    "view_backup_phrase": {
+      "lbTitle": "VIEW BACKUP PHRASE",
+      "lbWarning": "Warning",
+      "lbWarningDetail": "Your Backup Phrase will be displayed as both a QR code and a string of random words.\n\nMake sure you view your Backup Phrase in private. Anyone with the following QR code and Backup Phrase can gain full access to your funds so DO NOT store them publicly or share with anyone.",
+      "btnUnderstand": "I understand",
+      "lbScan": "Scan this QR Code with the camera of the device you wish to pair to, or enter the Backup Phrase below.",
+      "btnCancel": "Cancel"
+    },
+    "trans_confirm": {
+      "lbTitle": "SEND CONFIRMATION",
+      "lbSend": "Send",
+      "lbMiningFee": "Mining Fee",
+      "lbFrom": "From",
+      "lbTo": "To",
+      "lbChangeAddress": "Change Address",
+      "btnConfirm": "Confirm",
+      "btnReject": "Reject",
+      "lbHold": "Hold 5s to confirm send transaction",
+      "lbPaymentSent": "Payment Sent",
+      "lbBackToWallet": "Back to wallet in"
+    },
+    "change_address": {
+      "lbTitle": "{{type}} ADDRESS",
+      "btnCreate": "Create",
+      "btnChangeName": "Change Address Name",
+      "btnRemove": "Remove Address",
+      "btnCancel": "Cancel"
+    },
+    "navigation_bar": {
+      "btnBack": "Back",
+      "btnContinue": "Continue"
+    },
+    "alert": {
+      "btnOK": "OK"
+    },
+    "error": {
+      "system": {
+        "title": "System error",
+        "detail": "Your action can not be performed now."
+      },
+      "no_wallet": {
+        "title": "Offline - Wallet info not found",
+        "detail": "User are in offline mode, there is no wallet info at this time."
+      },
+      "cancel_request": {
+        "title": "User cancel request.",
+        "detail": "User click cancel button or back button."
+      },
+      "timeout_confirm": {
+        "title": "Timeout confirmation",
+        "detail": "User wait too long for confirmation."
+      },
+      "invalid_address": {
+        "title": "Invalid address",
+        "detail": "Address(es) is not created by Signer."
+      },
+      "wrong_password": {
+        "title": "Wrong password",
+        "detail": "User input a wrong password."
+      },
+      "incorrect_confirm_password" : {
+        "title": "Failed",
+        "detail": "Confirm PIN does not match."
+      },
+      "invalid_backup_phrase": {
+        "title": "Invalid backup phrase",
+        "detail": "Backup Phrase is invalid"
+      },
+      "cannot_view_backup_phrase": {
+        "title": "",
+        "detail": "Cannot view Backup Phrase now, try later."
+      },
+      "cannot_backup_wallet": {
+        "title": "",
+        "detail": "Cannot backup Wallet now, try later."
+      },
+      "weak_password": {
+        "title": "Weak password",
+        "detail": "Please choose a stronger password. Try a mix of letters, numbers, symbols and at least 8 characters."
+      },
+      "empty_password": {
+        "title": "Empty password",
+        "detail": "Password cannot be empty."
+      },
+      "incorrect_answer": {
+        "title": "Incorrect answer",
+        "detail": "It's important that you write your backup phrase down correctly. If something happens to your wallet, you'll need this backup_wallet to recover your money.\nPlease review your backup_wallet and try again."
+      }
+    }
+}
