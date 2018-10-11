@@ -72,15 +72,29 @@ app.get('/login', (req, res, next) => {
   };
   if (!userReference.get(CONSTANTS.IS_NEW_WALLET_KEY) &&
       userReference.get("Address")) {
-    res.send({ result : response_data });
-    return;
+    let wallet_addrs = userReference.get("Address");
+    for (var index = 0; index < wallet_addrs.length; ++index) {
+      if (wallet_addrs[index].network == "SOLO") {
+        res.send({ result : response_data });
+        return;
+      }
+    }
   }
+
+  main.mainWindow.show();
+  main.mainWindow.focus();
 
   let check_login_timeout = setInterval(function() {
     if (!userReference.get(CONSTANTS.IS_NEW_WALLET_KEY) &&
         userReference.get("Address")) {
-      res.send({ result : response_data });
-      clearInterval(check_login_timeout);
+      let wallet_addrs = userReference.get("Address");
+      for (var index = 0; index < wallet_addrs.length; ++index) {
+        if (wallet_addrs[index].network == "SOLO") {
+          res.send({ result : response_data });
+          clearInterval(check_login_timeout);
+          break;
+        }
+      }
     }
   }, 1000);
 
