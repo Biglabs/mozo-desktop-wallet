@@ -67,7 +67,7 @@ The `exe` file will be output in the `project directory\dist` directory
 #### MacOS
 From the shell, type `bash` to use BASH, then run the following commands to create the `dmg` package to distribute and install
 ```batch
-yarn && yarn webpack && yarn build:mac && yarn dist:mac && yarn zip
+yarn && yarn webpack && yarn build:mac && yarn dist:mac
 ```
 The `dmg` file will be output in the `project directory\dist` directory
 
