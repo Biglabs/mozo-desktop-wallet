@@ -12,7 +12,7 @@ const APP_SETTINGS = {
 
   mozo_services: {
     api: {
-      host: "http://18.136.55.245:8080/solomon"
+      host: "https://dev.gateway.mozocoin.io/solomon"
     },
     oauth2: {
       host: "https://dev.keycloak.mozocoin.io",
