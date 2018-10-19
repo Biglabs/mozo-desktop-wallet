@@ -123,11 +123,9 @@ const createWindow = () => {
 }
 
 function handleDeepLinkURL(url) {
-  if (!url) {
-    return;
-  }
-
-  if (typeof url != "string") {
+  if (!url || (typeof url != "string")) {
+    mainWindow.show();
+    mainWindow.focus();
     return;
   }
 

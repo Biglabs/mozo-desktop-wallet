@@ -141,6 +141,9 @@ export default class CreateTransactionScreen extends React.Component {
     doCreateTransaction() {
         let to_address = this.state.to_address;
         let mozo_value = this.state.mozo_value;
+        if (to_address == this._from_address) {
+            return;
+        }
         let tx_info = {
             'from' : this._from_address,
             'to' : to_address,

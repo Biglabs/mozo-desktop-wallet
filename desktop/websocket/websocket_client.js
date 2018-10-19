@@ -13,7 +13,10 @@ let request = {
   },
   logLevel : 'debug',
   transport : 'websocket',
-  fallbackTransport: 'long-polling'
+  fallbackTransport: 'long-polling',
+  reconnectInterval: 1000,
+  ackInterval: 15000,
+  maxReconnectOnClose: 99
 };
 
 let socket_client = null;
