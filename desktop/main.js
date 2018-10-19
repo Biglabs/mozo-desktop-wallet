@@ -81,8 +81,8 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     minWidth: 300,
     minHeight: 400,
-    maxWidth: 400,
-    width: 400,
+    maxWidth: 500,
+    width: 500,
     height: 800,
     show: false,
     /* width: 1024,
@@ -101,7 +101,7 @@ const createWindow = () => {
   });
 
   //hide default menu of browser
-  mainWindow.setMenu(null);
+  // mainWindow.setMenu(null);
   //open dev tools
   // mainWindow.webContents.openDevTools();
 

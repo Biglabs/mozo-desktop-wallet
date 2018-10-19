@@ -168,6 +168,7 @@ function updateWalletBalance() {
 }
 
 let exchange_rate_interval = null;
+let update_wallet_balance_interval = null;
 
 function getUserProfile() {
   return new Promise(function(resolve, reject) {
@@ -190,6 +191,11 @@ function getUserProfile() {
             // Get exchange every 10 minutes
             exchange_rate_interval = setInterval(
               getExchangeRateInfo, 600000);
+          }
+
+          if (!update_wallet_balance_interval) {
+            update_wallet_balance_interval = setInterval(
+              updateWalletBalance, 4000);
           }
 
           let uuid = crypto.randomBytes(32).toString("hex");
@@ -228,6 +234,8 @@ function logOut() {
   if (exchange_rate_interval) {
     clearInterval(exchange_rate_interval);
     exchange_rate_interval = null;
+    clearInterval(update_wallet_balance_interval);
+    update_wallet_balance_interval = null;
     websocket_client.disconnect();
   }
   var sess = main.mainWindow.webContents.session;
