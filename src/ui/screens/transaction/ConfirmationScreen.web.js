@@ -1,7 +1,8 @@
 import React from "react";
 import {ActivityIndicator, Alert, AppState, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Actions} from 'react-native-router-flux';
-// import CountDown from 'react-native-countdown-component';
+import ReactCountdownClock from 'react-countdown-clock';
+import PinInput from 'react-pin-input';
 
 import {
     colorContentText,
@@ -17,9 +18,14 @@ import {
     icons
 } from '../../../res';
 import {ScreenHeaderActions, SvgView, Text} from "../../components";
+import { strings } from '../../../helpers/i18nUtils';
 import Constant from '../../../helpers/Constants';
+import {WalletService} from "../../../services";
 import Globals from '../../../services/GlobalService';
 import SignService from '../../../services/SignService';
+
+let {remote} = require('electron');
+let services = remote.require('./utils/services');
 
 export default class ConfirmationScreen extends React.Component {
 
@@ -34,6 +40,9 @@ export default class ConfirmationScreen extends React.Component {
         this.fromAddress = [];
         this.value = 0;
         this.fees = 0;
+
+        this._fromAPI = props.fromAPI ? true : false;
+
         if (props.txData && props.txData.params && props.txData.params.tx) {
             props.txData.params.tx.outputs.map(out => {
                 out.addresses.map(address => this.toAddress.push(address));
@@ -66,25 +75,54 @@ export default class ConfirmationScreen extends React.Component {
         }
     }
 
-    onConfirmTransaction() {
+    handleIncorrectPIN(error) {
+        Alert.alert(
+            error.title,
+            error.detail,
+            [{text: strings('alert.btnOK')},],
+        );
+    }
+
+    onCompletePINfield(pin, index) {
+        let mnemonicPhrase = WalletService.viewBackupPhrase(pin);
+        console.log("mnemonic Phrase: " + mnemonicPhrase);
+        if (!mnemonicPhrase) {
+            let error = Constant.ERROR_TYPE.WRONG_PASSWORD;
+            console.log("handleEnterCorrectPin, error: ", error);
+            this.handleIncorrectPIN(error);
+            return;
+        }
         this.setState({isShowingLoading: true}, () => {
-            setTimeout(() => {
-                SignService.signTransaction(this.props.txData, this.props.pin, (error, result) => {
-                    if (result) {
-                        Actions.pop();
-                        Globals.responseToReceiver({signedTransaction: result}, this.props.txData);
+            console.log(this.props.txData);
+            SignService.signTransaction(this.props.txData, pin, (error, result) => {
+                if (result) {
+                    if (this._fromAPI) {
+                        Actions.reset('home');
+                        Globals.responseToReceiver(
+                            {signedTransaction: result},
+                            this.props.txData);
                     } else {
-                        this.setState({isShowingLoading: false});
-                        console.log(error.message || error.detail);
-                        var returnError = null;
-                        if (error.message) {
-                            returnError = Constant.ERROR_TYPE.UNKNOWN;
-                            returnError.detail = error.message;
-                        }
-                        this.cancelTransaction(returnError);
+                        console.log(result);
+                        let signed_tx_data = JSON.parse(result);
+                        services.sendSignRequestToServer(signed_tx_data).then((tx_data) => {
+                            Actions.reset('home');
+                            console.log(tx_data);
+                        }, (error) => {
+                            console.log(error);
+                        });
                     }
-                });
-            }, 5);
+
+                } else {
+                    this.setState({isShowingLoading: false});
+                    console.log(error.message || error.detail);
+                    var returnError = null;
+                    if (error.message) {
+                        returnError = Constant.ERROR_TYPE.UNKNOWN;
+                        returnError.detail = error.message;
+                    }
+                    this.cancelTransaction(returnError);
+                }
+            });
         });
     }
 
@@ -99,22 +137,14 @@ export default class ConfirmationScreen extends React.Component {
     }
 
     handleConfirmTimeout() {
-        Alert.alert(
-            'Transaction confirmation timeout',
-            'This transaction has been time out. Please try again.',
-            [
-                {
-                    text: 'OK', onPress: () => {
-                        this.cancelTransaction(Constant.ERROR_TYPE.TIME_OUT_CONFIRM);
-                    }
-                },
-            ],
-            {cancelable: false}
-        );
+        let error = Constant.ERROR_TYPE.TIME_OUT_CONFIRM;
+        Actions.pop();
+        Globals.responseToReceiver({error: error}, { action: "SIGN" });
     }
 
     componentDidMount() {
         AppState.addEventListener('change', this._handleAppStateChange);
+        this._pin_field.focus();
     }
 
     componentWillUnmount() {
@@ -211,39 +241,37 @@ export default class ConfirmationScreen extends React.Component {
                             </View>
                         </View>
 
+                        <View style={styles.dash} />
+
+                        <PinInput
+                            ref={(input) => { this._pin_field = input; }}
+                            length={6}
+                            secret
+                            onChange={(value, index) => {}}
+                            type="numeric"
+                            style={{
+                                margin: '0 2px',
+                                padding: 0,
+                                font: '20px arial, sans-serif'
+                            }}
+                            inputStyle={{borderColor: 'red'}}
+                            inputFocusStyle={{borderColor: 'blue'}}
+                            onComplete={(value, index) => { this.onCompletePINfield(value, index) }}
+                        />
+
                         <View style={styles.dash}/>
 
-                        {
-                            this.state.pressedConfirm &&
-                            <View style={styles.confirmation_container}>
+                        <ReactCountdownClock
+                            seconds={Constant.CONFIRM_TIME_OUT}
+                            // seconds={5}
+                            onComplete={this.handleConfirmTimeout}
+                            size={100}
+                            color={colorPrimary}
+                        />
 
-                                <Text style={styles.confirmation_text}>Hold 5s to confirm send transaction</Text>
-                            </View>
-                        }
+                        <View style={styles.dash}/>
+
                         <View style={styles.confirmation_footer}>
-                            {/*<CountDown*/}
-                                {/*style={styles.countdown_confirm}*/}
-                                {/*digitBgColor={colorPrimary}*/}
-                                {/*digitTxtColor={colorScreenBackground}*/}
-                                {/*timeTxtColor={colorPrimary}*/}
-                                {/*until={Constant.CONFIRM_TIME_OUT}*/}
-                                {/*onFinish={() => this.handleConfirmTimeout()}*/}
-                                {/*size={20}*/}
-                                {/*timeToShow={['M', 'S']}*/}
-                            {/*/>*/}
-                            <TouchableOpacity style={styles.button_confirm}
-                                              onPressIn={() => this.setState({pressedConfirm: true})}
-                                              onPressOut={() => {
-                                                  this.setState({pressedConfirm: false});
-                                                  this.onConfirmTransaction();
-                                              }}>
-                                <SvgView
-                                    fill={colorPrimary}
-                                    width={20}
-                                    height={20}
-                                    svg={icons.icCheck}/>
-                                <Text style={styles.text_confirm}>Confirm</Text>
-                            </TouchableOpacity>
                             <Text style={styles.text_reject} onPress={() => {
                                 this.cancelTransaction();
                             }}>Reject</Text>

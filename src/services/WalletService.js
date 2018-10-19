@@ -219,7 +219,7 @@ module.exports.manageWallet = function(isNewPin, pin, importedPhrase, coinTypes,
         if (isWebPlatform()) {
             var {remote} = require('electron');
             var main = remote.require("./main.js");
-            main.updateWalletInfo().then(function() {
+            main.services.updateWalletInfo().then(function() {
                 if (typeof callback === 'function') {
                     callback(null, null);
                 }
@@ -244,7 +244,7 @@ module.exports.manageWallet = function(isNewPin, pin, importedPhrase, coinTypes,
           if (isWebPlatform()) {
               var {remote} = require('electron');
               var main = remote.require("./main.js");
-              main.updateWalletInfo().then(function() {
+              main.services.updateWalletInfo().then(function() {
                   if (typeof callback === 'function') {
                       callback(null, null);
                   }

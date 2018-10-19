@@ -171,19 +171,17 @@ app.get('/getWalletBalance', (req, res, next) => {
     res.send({ result : response_data });
     return;
   }
-  let balance_info = services.getWalletBalance(addr_network).then(function(balance_info) {
-    if (balance_info) {
-      response_data = {
-        status: "SUCCESS",
-        data: balance_info,
-        error: null
-      };
-    }
-    res.send({ result : response_data });
-  }, function(err) {
+  let balance_info = services.getWalletBalance(addr_network);
+  if (balance_info) {
+    response_data = {
+      status: "SUCCESS",
+      data: balance_info,
+      error: null
+    };
+  } else {
     response_data.error = ERRORS.INTERNAL_ERROR;
-    res.send({ result : response_data });
-  });
+  }
+  res.send({ result : response_data });
 });
 
 app.route('/address-book')
@@ -292,7 +290,12 @@ app.post('/transaction/send', (req, res, next) => {
     return;
   }
 
-  services.createTransaction(tx_send_data, res, services.confirmTransaction);
+  services.createTransaction(tx_send_data).then((tx_data) => {
+    services.confirmTransaction(tx_data, res);
+  }, (error) => {
+    response_data.error = error;
+    res.send({ result : response_data });
+  });
 });
 
 app.get('/transaction/txstatus', (req, res, next) => {

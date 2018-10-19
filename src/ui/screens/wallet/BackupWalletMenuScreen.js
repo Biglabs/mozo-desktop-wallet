@@ -14,24 +14,6 @@ export default class BackupWalletMenuScreen extends React.Component {
                 <ScreenHeaderActions title={strings('backup_wallet_menu.lbTitle')}/>
 
                 <TouchableOpacity
-                    style={[styles.buttons, {marginTop: 20}]}
-                    onPress={() => Actions.backup_wallet_encrypt({pin: this.props.pin})}>
-                    <Text style={styles.buttons_text}>{strings('backup_wallet_menu.btnBackup')}</Text>
-
-                    <BackupWalletStateIcon/>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SvgView
-                            width={20}
-                            height={20}
-                            svg={icons.icInformation}
-                        />
-                    </TouchableOpacity>
-                </TouchableOpacity>
-
-                <View style={styles.dash}/>
-
-                <TouchableOpacity
                     style={styles.buttons}
                     onPress={() => Actions.view_backup_phrase({pin: this.props.pin})}>
                     <Text style={styles.buttons_text}>{strings('backup_wallet_menu.btnView')}</Text>

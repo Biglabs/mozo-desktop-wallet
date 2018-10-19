@@ -72,8 +72,10 @@ function manageScheme(data, pin){
 
 function sendJsonDataToConfirm(jsonData) {
     if (jsonData) {
-        CachingService.getInstance().setSchemeData(jsonData);
-        Globals.checkWalletExisting();
+        Globals.checkWalletExisting({
+            confirmTransaction : true,
+            txData: JSON.parse(jsonData)
+        });
     }
 }
 

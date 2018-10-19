@@ -1,14 +1,16 @@
 
 const userReference = require('electron-settings');
 const R = require('ramda');
-var request = require('request');
+let request = require('request');
+const crypto = require("crypto");
 
 const main = require('../main');
 const ERRORS = require("../constants").ERRORS;
 const CONSTANTS = require("../constants").CONSTANTS;
 const oauth2 = require('./oauth2');
 const {setRequestData} = require('./common');
-var address_book = require('./addressbook');
+const address_book = require('./addressbook');
+const websocket_client = require('../websocket/websocket_client');
 
 const app_config = require("../app_settings").APP_SETTINGS;
 const mozo_service_host = app_config.mozo_services.api.host;
@@ -110,15 +112,59 @@ function getExchangeRateInfo() {
           exchange_info = JSON.parse(body);
           userReference.set(exchange_rate_name, exchange_info);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          console.log(response.statusCode);
+          console.log(body);
         }
       } else {
-        // console.log(error);
+        console.log(error);
       }
     });
 
   }
+}
+
+function updateWalletBalance() {
+  let wallet_addrs = userReference.get("Address");
+
+  if (!wallet_addrs) {
+    return;
+  }
+
+  let address = null;
+
+  for (var index = 0; index < wallet_addrs.length; ++index) {
+    let addr = wallet_addrs[index];
+    if (addr.network == "SOLO") {
+      address = addr.address;
+      break;
+    }
+  }
+
+  if (!address) {
+    return;
+  }
+
+  let options = setRequestData();
+  if (!options) {
+    return;
+  }
+
+  options.url = mozo_service_host +
+    "/api/solo/contract/solo-token/balance/" + address;
+
+  request(options, function(error, response, body) {
+    if (!error) {
+      if (response.statusCode == 200) {
+        let balance_info = JSON.parse(body);
+        userReference.set("Wallet_Balance_SOLO", balance_info);
+      } else {
+        console.log(response.statusCode);
+        console.log(body);
+      }
+    } else {
+      console.log(error);
+    }
+  });
 }
 
 let exchange_rate_interval = null;
@@ -138,21 +184,29 @@ function getUserProfile() {
           extractWalletData(user_profile.walletInfo);
           getOffchainTokenInfo();
           address_book.download();
+          getExchangeRateInfo();
+          updateWalletBalance();
           if (!exchange_rate_interval) {
             // Get exchange every 10 minutes
-            exchange_rate_interval = setIntervalImmediately(
+            exchange_rate_interval = setInterval(
               getExchangeRateInfo, 600000);
           }
+
+          let uuid = crypto.randomBytes(32).toString("hex");
+          websocket_client.connect(
+            app_config.mozo_services.notification.host + "/user/" +
+            "desktop-" + uuid);
+          websocket_client.addListener('services', handleNotification);
           resolve(null);
         } else if (response.statusCode == 401)  {
           userReference.deleteAll();
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          console.log(response.statusCode);
+          console.log(body);
           reject(body);
         }
       } else {
-        // console.log(error);
+        console.log(error);
         reject(error);
       }
     });
@@ -160,13 +214,21 @@ function getUserProfile() {
 }
 getUserProfile().then(function() {}, function() {});
 
-exports.getUserProfile = getUserProfile;
+function handleNotification(json_data) {
+  if (json_data && json_data.content && json_data.content.event) {
+    if (json_data.content.event == "balance_changed") {
+      updateWalletBalance();
+    }
+  }
+}
 
-var logOut = exports.logOut = function() {
+
+function logOut() {
   userReference.deleteAll();
   if (exchange_rate_interval) {
     clearInterval(exchange_rate_interval);
     exchange_rate_interval = null;
+    websocket_client.disconnect();
   }
   var sess = main.mainWindow.webContents.session;
   sess.clearCache(function() {
@@ -183,7 +245,7 @@ function cleanUpUpdateWalletInfoInverval() {
   send_wallet_info_interval = null;
 }
 
-exports.updateWalletInfo = function() {
+function updateWalletInfo() {
   return new Promise(function(resolve, reject) {
     if (!!send_wallet_info_interval) {
       resolve(null);
@@ -260,7 +322,7 @@ function getTokenInfo() {
   return userReference.get(CONSTANTS.OFFCHAIN_TOKEN_INFO);
 };
 
-exports.createTransaction = function(tx_info, res) {
+function createTransaction(tx_info) {
   let tx_req = {
     gas_price : 0,
     gas_limit : 4300000,
@@ -280,46 +342,36 @@ exports.createTransaction = function(tx_info, res) {
 
   // console.log("Request data: " + JSON.stringify(options));
   const token_info = getTokenInfo();
-  if (token_info) {
-    let outputs_tx = [
-      {
-        addresses: [ tx_info.to ],
-        value: tx_info.value * Math.pow(10, token_info.decimals)
-      }
-    ];
-    options.body.outputs = outputs_tx;
-
-    request(options, function(error, response, body) {
-      if (!error) {
-        if (response.statusCode == 200) {
-          // console.log("Transaction info: " + JSON.stringify(body));
-          body.tx.outputs = outputs_tx;
-          confirmTransaction(body, res);
-        } else {
-          // console.log(response.statusCode);
-          // console.log(body);
-          let response_data = {
-            status: "ERROR",
-            error: ERRORS.INTERNAL_ERROR
-          };
-          res.send({ result : response_data });
+  return new Promise((resolve, reject) => {
+    if (token_info) {
+      let outputs_tx = [
+        {
+          addresses: [ tx_info.to ],
+          value: tx_info.value * Math.pow(10, token_info.decimals)
         }
-      } else {
-        // console.log(error);
-        let response_data = {
-          status: "ERROR",
-          error: ERRORS.INTERNAL_ERROR
-        };
-        res.send({ result : response_data });
-      }
-    });
-  } else {
-    let response_data = {
-      status: "ERROR",
-      error: ERRORS.INTERNAL_ERROR
-    };
-    res.send({ result : response_data });
-  }
+      ];
+      options.body.outputs = outputs_tx;
+      request(options, function(error, response, body) {
+        if (!error) {
+          if (response.statusCode == 200) {
+            // console.log("Transaction info: " + JSON.stringify(body));
+            let tx_data = body;
+            tx_data.tx.outputs = outputs_tx;
+            resolve(tx_data);
+          } else {
+            // console.log(response.statusCode);
+            // console.log(body);
+            reject(ERRORS.INTERNAL_ERROR);
+          }
+        } else {
+          // console.log(error);
+          reject(ERRORS.INTERNAL_ERROR);
+        }
+      });
+    } else {
+      reject(ERRORS.INTERNAL_ERROR);
+    }
+  });
 };
 
 /**
@@ -328,18 +380,17 @@ exports.createTransaction = function(tx_info, res) {
  * Currently can only handle 1 transaction at 1 time only
  */
 var signHttpCallback = null;
-var timerCountInterval = null;
-var timerCount = 0;
-var isFinishedConfirmationInput = false;
 var previous_state = null;
 
 function confirmTransaction(tx_server_req, res_callback) {
-  if (signHttpCallback && timerCount > 0) {
-    let response_data = {
-      status: "ERROR",
-      error: ERRORS.PENDING_TRANSACTION
-    };
-    res_callback({ result : response_data });
+  if (signHttpCallback) {
+    if (res_callback) {
+      let response_data = {
+        status: "ERROR",
+        error: ERRORS.PENDING_TRANSACTION
+      };
+      res_callback({ result : response_data });
+    }
     return;
   }
   let request_data = {
@@ -354,28 +405,35 @@ function confirmTransaction(tx_server_req, res_callback) {
   }
   main.mainWindow.webContents.send('open-confirm-transaction-screen', request_data);
   signHttpCallback = res_callback;
-  timerCount = 60; // number of seconds
   isFinishedConfirmationInput = false;
-
-  // Add timer count
-  timerCountInterval = setInterval(function() {
-    if (timerCount > 0 && !isFinishedConfirmationInput) {
-      timerCount -= 1;
-    } else {
-      clearInterval(timerCountInterval);
-      timerCountInterval = null;
-      let error_obj = {
-        status: "ERROR",
-        data: null,
-        error: ERRORS.TRANSACTION_REQUEST_TIMEOUT
-      };
-      sendSignRequest({result: error_obj});
-    }
-  }, 1000);
-
 };
 
-function sendSignRequest(signed_req, callback) {
+function sendSignRequestToServer(signed_req) {
+  return new Promise((resolve, reject) => {
+    let options = setRequestData();
+    options.url = mozo_service_host + "/api/solo/contract/solo-token/send-signed-tx";
+    options.method = "POST";
+    options.json = true;
+    options.body = signed_req;
+
+    request(options, function(error, response, body) {
+      if (!error) {
+        if (response.statusCode == 200) {
+          resolve(body);
+        } else {
+          console.log(response.statusCode);
+          console.log(body);
+          reject(ERRORS.INTERNAL_ERROR);
+        }
+      } else {
+        console.log(error);
+        reject(ERRORS.INTERNAL_ERROR);
+      }
+    });
+  });
+}
+
+function sendSignRequest(signed_req) {
   let response_data = {
     status: "ERROR",
     error: ERRORS.CANCEL_REQUEST
@@ -383,7 +441,7 @@ function sendSignRequest(signed_req, callback) {
 
   if (signed_req.result.error) {
     if (signHttpCallback) {
-      isFinishedConfirmationInput = true;
+      response_data.error = signed_req.result.error;
       signHttpCallback.send({ result : response_data});
       signHttpCallback = null;
       if (previous_state && previous_state == "minimized") {
@@ -393,124 +451,62 @@ function sendSignRequest(signed_req, callback) {
     }
     return;
   }
+  let sign_req_data = JSON.parse(signed_req.result.signedTransaction);
 
-  let options = setRequestData();
-  options.url = mozo_service_host + "/api/solo/contract/solo-token/send-signed-tx";
-  options.method = "POST";
-  options.json = true;
-  options.body = JSON.parse(signed_req.result.signedTransaction);
+  sendSignRequestToServer(sign_req_data).then((tx_data) => {
+    if (signHttpCallback) {
+      response_data = {
+        status: "SUCCESS",
+        data: tx_data
+      };
+      signHttpCallback.send({ result : response_data });
+      signHttpCallback = null;
+    }
 
-  request(options, function(error, response, body) {
-    if (!error) {
-      // console.log(JSON.stringify(body));
-      if (response.statusCode == 200) {
-        response_data = {
-          status: "SUCCESS",
-          data: body
-        };
-      } else {
-        // console.log(response.statusCode);
-        response_data.error = ERRORS.INTERNAL_ERROR;
-      }
-    } else {
-      // console.log(error);
-      response_data.error = ERRORS.INTERNAL_ERROR;
+  }, (error) => {
+    if (signHttpCallback) {
+      response_data.error = error;
+      signHttpCallback.send({ result : response_data });
+      signHttpCallback = null;
     }
-    signHttpCallback.send({ result : response_data });
-    isFinishedConfirmationInput = true;
-    signHttpCallback = null;
-    if (previous_state && previous_state == "minimized") {
-      previous_state = null;
-      main.mainWindow.minimize();
-    }
+
   });
+
+  if (previous_state && previous_state == "minimized") {
+    previous_state = null;
+    main.mainWindow.minimize();
+  }
 }
 
-exports.sendSignRequest = sendSignRequest;
+function getWalletBalance(network_data) {
+  if (!network_data) {
+    return null;
+  }
 
-exports.getWalletBalance = function(network_data) {
-  return new Promise(function(resolve, reject) {
-    if (!network_data) {
-      reject(null);
-      return;
+  let network = network_data.toUpperCase();
+  let balance_info = userReference.get("Wallet_Balance_" + network);
+  if (!balance_info) {
+    return balance_info;
+  }
+  if (balance_info.decimals && balance_info.decimals > 0) {
+    balance_info.balance /= Math.pow(10, balance_info.decimals);
+  }
+  let exchange_rates = R.map(x => {
+    let exchange_rate_data = userReference.get(network + "_" + x);
+    if (exchange_rate_data) {
+      return {
+        currency : exchange_rate_data.currency,
+        value: balance_info.balance * exchange_rate_data.rate
+      };
     }
-
-    let network = network_data.toUpperCase();
-    let wallet_addrs = userReference.get("Address");
-    let response_data = {
-      status: "ERROR",
-      error: ERRORS.NO_WALLET
-    };
-
-    if (!wallet_addrs) {
-      reject(null);
-      return;
-    }
-
-    let address = null;
-
-    for (var index = 0; index < wallet_addrs.length; ++index) {
-      let addr = wallet_addrs[index];
-      if (addr.network == network) {
-        address = addr.address;
-        break;
-      }
-    }
-
-    if (!address) {
-      reject(null);
-      return;
-    }
-
-    let options = setRequestData();
-    if (!options) {
-      reject(null);
-      return;
-    }
-
-    options.url = mozo_service_host +
-      "/api/solo/contract/solo-token/balance/" + address;
-
-
-    request(options, function(error, response, body) {
-      if (!error) {
-        if (response.statusCode == 200) {
-          // console.log("Balance Info: " + body);
-          balance_info = JSON.parse(body);
-          if (balance_info.decimals && balance_info.decimals > 0) {
-            balance_info.balance /= Math.pow(10, balance_info.decimals);
-          }
-          let exchange_rates = R.map(x => {
-            let exchange_rate_data = userReference.get(network + "_" + x);
-            if (exchange_rate_data) {
-              return {
-                currency : exchange_rate_data.currency,
-                value: balance_info.balance * exchange_rate_data.rate
-              };
-            }
-          }, CONSTANTS.CURRENCY_EXCHANGE_RATE);
-          balance_info.exchange_rates = exchange_rates;
-          resolve(balance_info);
-        } else {
-          // console.log(response.statusCode);
-          // console.log(body);
-          resolve(null);
-        }
-      } else {
-        // console.log(error);
-        reject(error);
-      }
-    });
-  });
+  }, CONSTANTS.CURRENCY_EXCHANGE_RATE);
+  balance_info.exchange_rates = exchange_rates;
+  return balance_info;
 };
 
-exports.getTransactionHistory = function(network, page_num, size_num) {
+function getTransactionHistory(network, page_num, size_num) {
   return new Promise(function(resolve, reject) {
     let wallet_addrs = userReference.get("Address");
-    let response_data = {
-      status: "ERROR",
-      error: ERRORS.NO_WALLET
-    };
 
     if (!wallet_addrs) {
       resolve(null);
@@ -592,7 +588,7 @@ exports.getTransactionHistory = function(network, page_num, size_num) {
   });
 };
 
-exports.getTxHashStatus = function(txhash) {
+function getTxHashStatus(txhash) {
   return new Promise(function(resolve, reject) {
     if (!txhash) {
       return;
@@ -619,3 +615,15 @@ exports.getTxHashStatus = function(txhash) {
   });
 };
 
+module.exports = {
+  'createTransaction' : createTransaction,
+  'confirmTransaction' : confirmTransaction,
+  'getTxHashStatus' : getTxHashStatus,
+  'getTransactionHistory' : getTransactionHistory,
+  'getUserProfile' : getUserProfile,
+  'getWalletBalance' : getWalletBalance,
+  'sendSignRequest' : sendSignRequest,
+  'sendSignRequestToServer' : sendSignRequestToServer,
+  'logOut' : logOut,
+  'updateWalletInfo' : updateWalletInfo
+};

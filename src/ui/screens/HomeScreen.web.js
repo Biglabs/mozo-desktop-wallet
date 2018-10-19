@@ -3,6 +3,8 @@ import {StyleSheet, TouchableOpacity, View, Platform} from 'react-native';
 import {SvgView} from "../components"
 import {Actions} from 'react-native-router-flux';
 
+import Constants from '../../helpers/Constants';
+
 import {
     colorDisable,
     colorPrimary,
@@ -13,15 +15,38 @@ import {
 } from '../../res';
 import {BackupWalletStateIcon, Text} from "../components";
 import {LinkingService, CachingService} from '../../services';
-import AsyncStorage from '../../helpers/AsyncStorageUtils';
+
+let {remote} = require('electron');
+let main = remote.require('./main');
 
 // use for display svg on web
 import SVGInline from "react-svg-inline";
 
 export default class HomeScreen extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            mozo_value: ''
+        };
+        this._coin = Constants.COIN_TYPE.SOLO;
+    }
 
     componentDidMount() {
+        let balance_info = main.services.getWalletBalance("SOLO");
+        if (balance_info) {
+            this.setState({mozo_balance: balance_info.balance});
+        }
+        this._balance_interval = setInterval(() => {
+            balance_info = main.services.getWalletBalance("SOLO");
+            if (balance_info) {
+                this.setState({mozo_balance: balance_info.balance});
+            }
+        }, 1000);
         this.manageScheme();
+    }
+
+    componentWillUnmount() {
+        clearInterval(this._balance_interval);
     }
 
     manageScheme() {
@@ -78,82 +103,50 @@ export default class HomeScreen extends React.Component {
                         svg={icons.icBackup}
                     /> 
                     <Text style={[styles.buttons_text, {marginLeft: 7}]}>Backup Wallet</Text>
-
-                    <BackupWalletStateIcon/>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SVGInline
-                            width="20"
-                            height="20"
-                            svg={icons.icInformation}
-                        />
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            );
-        } else {
-            return (
-                <TouchableOpacity
-                    style={[styles.buttons, {marginTop: 20}]}
-                    onPress={() => Actions.backup_wallet_menu({pin: this.props.pin})}>
-                    <SvgView
-                        width={24}
-                        height={20}
-                        fill={colorPrimary}
-                        svg={icons.icBackup}/>
-                    <Text style={[styles.buttons_text, {marginLeft: 7}]}>Backup Wallet</Text>
-
-                    <BackupWalletStateIcon/>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SvgView
-                            width={20}
-                            height={20}
-                            svg={icons.icInformation}/>
-                    </TouchableOpacity>
                 </TouchableOpacity>
             );
         }
     }
 
-    displayPairDevices(){
-        if(Platform.OS.toUpperCase() ==="WEB"){
+    displayCreateTransactionScreen() {
+        if(Platform.OS.toUpperCase() ==="WEB") {
             return(
-                <TouchableOpacity style={styles.buttons}>
+                <TouchableOpacity
+                    style={styles.buttons}
+                    onPress={() => Actions.jump('create_transaction')}
+                >
                     <SVGInline
                         width="20"
                         height="20"
                         fill={colorPrimary}
                         svg={icons.icSync}/>
-                    <Text style={styles.buttons_text}>Pair Devices</Text>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SVGInline
-                            width="20"
-                            height="20"
-                            svg={icons.icInformation}/>
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            );
-        } else {
-            return(
-                <TouchableOpacity style={styles.buttons}>
-                    <SvgView
-                        width={20}
-                        height={20}
-                        fill={colorPrimary}
-                        svg={icons.icSync}/>
-                    <Text style={styles.buttons_text}>Pair Devices</Text>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SvgView
-                            width={20}
-                            height={20}
-                            svg={icons.icInformation}/>
-                    </TouchableOpacity>
+                    <Text style={styles.buttons_text}>Send Mozo</Text>
                 </TouchableOpacity>
             );
         }
     }
+
+    // displayPairDevices(){
+    //     if(Platform.OS.toUpperCase() ==="WEB"){
+    //         return(
+    //             <TouchableOpacity style={styles.buttons}>
+    //                 <SVGInline
+    //                     width="20"
+    //                     height="20"
+    //                     fill={colorPrimary}
+    //                     svg={icons.icSync}/>
+    //                 <Text style={styles.buttons_text}>Pair Devices</Text>
+
+    //                 <TouchableOpacity style={styles.buttons_icon}>
+    //                     <SVGInline
+    //                         width="20"
+    //                         height="20"
+    //                         svg={icons.icInformation}/>
+    //                 </TouchableOpacity>
+    //             </TouchableOpacity>
+    //         );
+    //     }
+    // }
 
     displayPaperWallet() {
         if(Platform.OS.toUpperCase() ==="WEB"){
@@ -172,26 +165,6 @@ export default class HomeScreen extends React.Component {
                         <SVGInline
                             width="20"
                             height="20"
-                            svg={icons.icInformation}/>
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            );
-        } else {
-            return (
-                <TouchableOpacity
-                    style={styles.buttons}
-                    onPress={() => Actions.paper_wallet()}>
-                    <SvgView
-                        width={20}
-                        height={20}
-                        fill={colorPrimary}
-                        svg={icons.icNote}/>
-                    <Text style={styles.buttons_text}>Paper Wallet</Text>
-
-                    <TouchableOpacity style={styles.buttons_icon}>
-                        <SvgView
-                            width={20}
-                            height={20}
                             svg={icons.icInformation}/>
                     </TouchableOpacity>
                 </TouchableOpacity>
@@ -252,6 +225,14 @@ export default class HomeScreen extends React.Component {
                             svgXmlData={icons.icInformation}/>
                     </TouchableOpacity>
                 </TouchableOpacity> */}
+
+                <Text style={styles.text_value}>
+                        Balance:
+                        {this.state.mozo_balance} {(this._coin.displayName || '').toUpperCase()}
+                </Text>
+
+                <View style={styles.dash}/>
+
                 {this.displayBackupWallet()}
                 
                 <View style={styles.dash}/>
@@ -271,7 +252,8 @@ export default class HomeScreen extends React.Component {
                             svgXmlData={icons.icInformation}/>
                     </TouchableOpacity>
                 </TouchableOpacity> */}
-                {this.displayPairDevices()}
+                {this.displayCreateTransactionScreen()}
+                {/* {this.displayPairDevices()} */}
 
                 <View style={styles.dash}/>
 

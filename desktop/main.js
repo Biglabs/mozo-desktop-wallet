@@ -20,6 +20,9 @@ console.log("PATH_APP_NODE_MODULES: " + PATH_APP_NODE_MODULES); */
 const proxy = require('./proxy/GrpcProxy');
 proxy.start();
 
+const websocket_server = require('./websocket/websocket_server');
+websocket_server.start()
+
 const services = require('./utils/services');
 
 const { app, BrowserWindow, protocol } = require('electron');
@@ -280,5 +283,13 @@ exports.handleMainRequest = (param) => {
   }
 }
 
-exports.updateWalletInfo = services.updateWalletInfo;
+module.exports.services = {
+  'createTransaction' : services.createTransaction,
+  'updateWalletInfo' : services.updateWalletInfo,
+  'getWalletBalance' : services.getWalletBalance
+};
+
+module.exports.ws_server = {
+  'sendMsg' : websocket_server.sendMsgClient
+};
 

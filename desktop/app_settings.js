@@ -10,9 +10,18 @@ const APP_SETTINGS = {
     port: 33013
   },
 
+  websocket_server: {
+    host: "127.0.0.1",
+    public_host: "127.0.0.1",
+    port: 33014
+  },
+
   mozo_services: {
     api: {
       host: "https://dev.gateway.mozocoin.io/solomon"
+    },
+    notification: {
+      host: "ws://18.136.38.11:8089/websocket"
     },
     oauth2: {
       host: "https://dev.keycloak.mozocoin.io",

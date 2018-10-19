@@ -52,7 +52,7 @@ const Constants = {
             icon: icCoinEth
         },
         SOLO: {
-            displayName: "SOLO",
+            displayName: "MOZO",
             name: "SOLO",
             value: 60,
             network: "SOLO",

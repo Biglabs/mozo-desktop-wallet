@@ -19,11 +19,19 @@ function checkExistingOAuth2Token() {
   });
 }
 
-function checkWalletExisting() {
+function checkWalletExisting(data) {
   AsyncStorage.getItem(FLAG_WALLET_KEY, (error, result) => {
     if (result) {
       /* has wallet */
-      Actions.reset('security_pin', {isNewPIN: false});
+      if (data && data.confirmTransaction) {
+        console.log(data.txData);
+        Actions.jump('trans_confirm', {
+          txData: data.txData,
+          fromAPI: true
+        });
+      } else {
+        Actions.reset('security_pin', {isNewPIN: false});
+      }
     } else {
       AsyncStorage.getItem(FLAG_APP_INFO_KEY, (error, result) => {
         console.log("Check Wallet exist: " + result);
@@ -50,7 +58,7 @@ function responseToReceiver(result, jsonData) {
     };
     let responseUrl = '';
     if (isWebPlatform()) {
-        var main = require('electron').remote.require("./main.js");
+        let main = require('electron').remote.require("./main.js");
         main.handleMainRequest(responseData);
     } else {
       responseUrl = `${jsonData.receiver}://${JSON.stringify(responseData)}`;

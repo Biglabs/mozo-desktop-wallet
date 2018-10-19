@@ -27,6 +27,9 @@ import RestoreWalletScreen from './ui/screens/backup/RestoreWalletScreen';
 import BackupPhraseDisplayScreen from './ui/screens/backup/BackupPhraseDisplayScreen';
 import BackupPhraseConfirmScreen from './ui/screens/backup/BackupPhraseConfirmScreen';
 import ViewBackupPhrase from './ui/screens/backup/ViewBackupPhraseScreen';
+
+/* transaction screens */
+import CreateTransactionScreen from './ui/screens/transaction/CreateTransactionScreen';
 import ConfirmationScreen from './ui/screens/transaction/ConfirmationScreen';
 
 import {isWebPlatform} from "./helpers/PlatformUtils";
@@ -43,6 +46,7 @@ import {isWebPlatform} from "./helpers/PlatformUtils";
     // Listen for main message
     ipcRenderer.on('open-confirm-transaction-screen', (event, arg) => {
       remote.getCurrentWindow().show();
+      remote.getCurrentWindow().focus();
       let json_data = JSON.stringify(arg);
       LinkingService.sendJsonDataToConfirm(json_data);
       // call method on main process
@@ -95,6 +99,7 @@ export default () => {
                     <Scene key="view_backup_phrase" component={ViewBackupPhrase} hideNavBar/>
 
                     {/* transaction screens */}
+                    <Scene key="create_transaction" component={CreateTransactionScreen} hideNavBar/>
                     <Scene key="trans_confirm" component={ConfirmationScreen} hideNavBar/>
                 </Modal>
             </Router>
