@@ -123,6 +123,14 @@ const createWindow = () => {
 }
 
 function handleDeepLinkURL(url) {
+  if (!url) {
+    return;
+  }
+
+  if (typeof url != "string") {
+    return;
+  }
+
   let split_array = url.split("://");
 
   // Handle case we have an empty string after splitting
