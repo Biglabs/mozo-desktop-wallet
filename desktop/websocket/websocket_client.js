@@ -59,8 +59,10 @@ function connect(connection_uri) {
 };
 
 function disconnect() {
-  socket_client.unsubscribe();
-  socket_client = null;
+  if (socket_client) {
+    socket.unsubscribe(request);
+    socket_client = null;
+  }
 }
 
 function sendMsg(json_data) {
