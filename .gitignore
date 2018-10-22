@@ -95,3 +95,4 @@ xcuserdata
 dist
 .idea/inspectionProfiles/
 desktop/dist/
+main.webpack.js

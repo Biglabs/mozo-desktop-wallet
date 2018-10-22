@@ -160,8 +160,10 @@ export default class CreateTransactionScreen extends React.Component {
             request_data = JSON.parse(JSON.stringify(request_data));
             Actions.jump('trans_confirm', {txData: request_data});
         }, (error) => {
-            console.log(error);
-            Actions.pop();
+            if (!error.code == "ERR-094") {
+                console.log(error);
+                Actions.pop();
+            }
         });
     }
 

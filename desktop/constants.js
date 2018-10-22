@@ -26,6 +26,13 @@ const ERRORS = {
     type: "Business"
   },
 
+  NOT_ENOUGH_BALANCE: {
+    code: "ERR-094",
+    title: "Not enough balance",
+    detail: "Not enough balance to make a transaction.",
+    type: "Business"
+  },
+
   INVALID_REQUEST: {
     code: "ERR-095",
     title: "Invalid request",

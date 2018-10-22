@@ -41,7 +41,7 @@ import {isWebPlatform} from "./helpers/PlatformUtils";
   const LinkingService = require("./services/LinkingService");
   if (isWebPlatform()) {
     var {ipcRenderer, remote} = require('electron');
-    var main = remote.require("./main.js");
+    //var main = remote.require("./main.js");
     console.log("ipcRenderer: " + ipcRenderer);
     // Listen for main message
     ipcRenderer.on('open-confirm-transaction-screen', (event, arg) => {
@@ -50,7 +50,7 @@ import {isWebPlatform} from "./helpers/PlatformUtils";
       let json_data = JSON.stringify(arg);
       LinkingService.sendJsonDataToConfirm(json_data);
       // call method on main process
-      main.sendMessageToRender('Open confirm transaction screen has been opened');
+      //main.sendMessageToRender('Open confirm transaction screen has been opened');
     });
 
   } else {

@@ -74,11 +74,14 @@ const shouldQuit = app.makeSingleInstance((argv, workingDirectory) => {
 });
 if (shouldQuit) {
     app.quit();
-    return;
+    exit(1);
 }
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
+    webPreferences: {
+      webSecurity: false
+    },
     minWidth: 300,
     minHeight: 400,
     maxWidth: 500,
@@ -101,7 +104,7 @@ const createWindow = () => {
   });
 
   //hide default menu of browser
-  // mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
   //open dev tools
   // mainWindow.webContents.openDevTools();
 
@@ -282,12 +285,18 @@ exports.sendMessageToRender = (param) => {
   // console.log("send-message-to-render: " + param);
 };
 
+ipc.on('handle-main-request', (event, arg) => {
+  if (arg && arg.action == "SIGN") {
+    services.sendSignRequest(arg);
+  }
+});
+
 exports.handleMainRequest = (param) => {
   if (param.action == "SIGN") {
     // grpcServer.returnSignRequest(param);
     services.sendSignRequest(param);
   }
-}
+};
 
 module.exports.services = {
   'createTransaction' : services.createTransaction,

@@ -323,10 +323,7 @@ app.get('/transaction/txstatus', (req, res, next) => {
   });
 });
 
-/**
- * export start proxy server to outside
- */
-module.exports.start = function(){
+function start_server() {
   /**
    * forward rest call to grpc and vice versal
    */
@@ -335,4 +332,11 @@ module.exports.start = function(){
                 // " port: " + port + "!");
   });
   httpServer.setTimeout(500000);
+}
+
+/**
+ * export start proxy server to outside
+ */
+module.exports = {
+  'start' : start_server
 };

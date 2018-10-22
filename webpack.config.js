@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const UglifyEsPlugin = require('uglify-es-webpack-plugin');
 
-module.exports = {
+const electron_render_config = {
   mode: 'development',
   entry: {
     app: ['babel-regenerator-runtime', './index.web.js'],
@@ -90,7 +90,8 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      __DEV__: JSON.stringify(true)
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      __DEV__: JSON.stringify('true')
     })
   ],
   optimization: {
@@ -113,10 +114,48 @@ module.exports = {
       })
     ]
   },
+  target: 'electron-renderer',
+};
+
+const electron_main_config = {
+  mode: 'development',
+  entry: {
+    app: [ path.resolve(__dirname, 'desktop', 'main.js') ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'desktop'),
+    filename: 'main.webpack.js',
+  },
+  node: {
+    __dirname: false,
+    __filename: false
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production')
+    })
+  ],
   devServer: {
     //contentBase: [path.resolve(__dirname, 'desktop')],
     host: '0.0.0.0',
     port: 8082
   },
-  target: 'electron-renderer',
-}
+  optimization: {
+    minimizer: [
+      new UglifyEsPlugin({
+        mangle: {
+          safari10: true,
+          keep_fnames: true,
+          reserved: [
+            'express',
+            'websocket',
+          ]
+        }
+      })
+    ]
+  },
+  target: 'electron-main',
+};
+
+
+module.exports = [electron_render_config];

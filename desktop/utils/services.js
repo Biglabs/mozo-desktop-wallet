@@ -331,6 +331,25 @@ function getTokenInfo() {
 };
 
 function createTransaction(tx_info) {
+  if (!(tx_info && tx_info.from && tx_info.to && tx_info.value)) {
+    return new Promise((resolve, reject) => {
+      reject(ERRORS.NOT_ENOUGH_BALANCE);
+    });
+  }
+
+  let balance_info = getWalletBalance("SOLO");
+  if (!balance_info) {
+    return new Promise((resolve, reject) => {
+      reject(ERRORS.NO_WALLET);
+    });
+  }
+
+  if (balance_info.balance < tx_info.value) {
+    return new Promise((resolve, reject) => {
+      reject(ERRORS.INVALID_REQUEST);
+    });
+  }
+
   let tx_req = {
     gas_price : 0,
     gas_limit : 4300000,

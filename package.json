@@ -13,6 +13,7 @@
     "ios": "yarn && ./node_modules/.bin/rn-nodeify --hack --install && react-native run-ios",
     "ios-release": "yarn && ./node_modules/.bin/rn-nodeify --hack --install && react-native run-ios --configuration Release",
     "desktop": "webpack && electron ./desktop/main.js",
+    "desktop:webpack": "webpack && electron ./desktop/main.webpack.js",
     "desktop:dev": "webpack-dev-server --hot --inline",
     "webpack": "webpack --progress --mode=production",
     "webpack-server": "webpack-serve",
@@ -23,8 +24,7 @@
     "build:linux": "cd desktop && yarn && cd .. && build --linux --dir",
     "dist:win": "cd desktop && yarn && cd .. && build --win",
     "dist:linux": "cd desktop && yarn && cd .. && build --linux",
-    "dist:mac": "cd desktop && yarn && cd .. && build --mac",
-    "zip": "cross-zip ./dist/SOLOSigner-0.0.1.dmg"
+    "dist:mac": "cd desktop && yarn && cd .. && build --mac"
   },
   "rnpm": {
     "assets": [
@@ -234,6 +234,7 @@
       "artifactName": "${productName}_${version}_${arch}.${ext}",
       "oneClick": false,
       "perMachine": false,
+      "deleteAppDataOnUninstall": true,
       "license": "./assets/installation/EULA.txt"
     },
     "mac": {
