@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const UglifyEsPlugin = require('uglify-es-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -92,6 +93,26 @@ module.exports = {
       __DEV__: JSON.stringify(true)
     })
   ],
+  optimization: {
+    minimizer: [
+      new UglifyEsPlugin({
+        mangle: {
+          safari10: true,
+          keep_fnames: true,
+          reserved: [
+            'Buffer',
+            'BigInteger',
+            'Point',
+            'ECPubKey',
+            'ECKey',
+            'sha512_asm',
+            'asm',
+            'HDNode'
+          ]
+        }
+      })
+    ]
+  },
   devServer: {
     //contentBase: [path.resolve(__dirname, 'desktop')],
     host: '0.0.0.0',
