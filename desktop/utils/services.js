@@ -333,7 +333,7 @@ function getTokenInfo() {
 function createTransaction(tx_info) {
   if (!(tx_info && tx_info.from && tx_info.to && tx_info.value)) {
     return new Promise((resolve, reject) => {
-      reject(ERRORS.NOT_ENOUGH_BALANCE);
+      reject(ERRORS.INVALID_REQUEST);
     });
   }
 
@@ -346,7 +346,7 @@ function createTransaction(tx_info) {
 
   if (balance_info.balance < tx_info.value) {
     return new Promise((resolve, reject) => {
-      reject(ERRORS.INVALID_REQUEST);
+      reject(ERRORS.NOT_ENOUGH_BALANCE);
     });
   }
 
