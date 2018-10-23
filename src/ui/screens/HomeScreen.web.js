@@ -16,8 +16,7 @@ import {
 import {BackupWalletStateIcon, Text} from "../components";
 import {LinkingService, CachingService} from '../../services';
 
-let {remote} = require('electron');
-let main = remote.require('./main');
+let {ipcRenderer} = require('electron');
 
 // use for display svg on web
 import SVGInline from "react-svg-inline";
@@ -32,12 +31,14 @@ export default class HomeScreen extends React.Component {
     }
 
     componentDidMount() {
-        let balance_info = main.services.getWalletBalance("SOLO");
+        let balance_info = ipcRenderer.sendSync(
+            "get-balance-info", { "network" : "SOLO" });
         if (balance_info) {
             this.setState({mozo_balance: balance_info.balance});
         }
         this._balance_interval = setInterval(() => {
-            balance_info = main.services.getWalletBalance("SOLO");
+            balance_info = ipcRenderer.sendSync(
+                "get-balance-info", { "network" : "SOLO" });
             if (balance_info) {
                 this.setState({mozo_balance: balance_info.balance});
             }
@@ -173,9 +174,8 @@ export default class HomeScreen extends React.Component {
     }
 
   logOutApp() {
-    if(Platform.OS.toUpperCase() ==="WEB"){
-      var main_services = require('electron').remote.require("./utils/services.js");
-      main_services.logOut();
+    if(Platform.OS.toUpperCase() === "WEB"){
+      ipcRenderer.send("logout-app");
     }
   }
 

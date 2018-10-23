@@ -105,7 +105,6 @@ export default class SecurityPinScreen extends Component<Props> {
     }
 
     handleEnterCorrectPin() {
-        let me = this;
         this.setState({isShowingLoading: true}, () => {
             setTimeout(() => {
                 let pin = this.pinCode.join("");

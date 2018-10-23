@@ -1,4 +1,4 @@
-const userReference = require('electron').remote.require('electron-settings');
+const userReference = require('electron-settings');
 /**
  * Fetches an item for a key and invokes a callback upon completion. Returns a Promise object.
  * @param {String} key Key of the item to set.

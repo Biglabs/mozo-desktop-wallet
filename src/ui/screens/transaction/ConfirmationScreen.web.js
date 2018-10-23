@@ -24,8 +24,7 @@ import {WalletService} from "../../../services";
 import Globals from '../../../services/GlobalService';
 import SignService from '../../../services/SignService';
 
-let {remote} = require('electron');
-let services = remote.require('./utils/services');
+let {ipcRenderer} = require('electron');
 
 export default class ConfirmationScreen extends React.Component {
 
@@ -97,19 +96,23 @@ export default class ConfirmationScreen extends React.Component {
             SignService.signTransaction(this.props.txData, pin, (error, result) => {
                 if (result) {
                     if (this._fromAPI) {
-                        Actions.reset('home');
+                        Actions.reset('home', {pin: pin});
                         Globals.responseToReceiver(
                             {signedTransaction: result},
                             this.props.txData);
                     } else {
                         console.log(result);
                         let signed_tx_data = JSON.parse(result);
-                        services.sendSignRequestToServer(signed_tx_data).then((tx_data) => {
-                            Actions.reset('home');
-                            console.log(tx_data);
-                        }, (error) => {
-                            console.log(error);
-                        });
+                        let result_data = ipcRenderer.sendSync(
+                            "send-signed-request-to-server", signed_tx_data);
+                        if (result_data) {
+                            if (result_data.status == "SUCCESS") {
+                                Actions.reset('home', {pin: pin});
+                                console.log(result_data.data);
+                            } else {
+                                console.log(result_data.error);
+                            }
+                        }
                     }
 
                 } else {

@@ -1,4 +1,4 @@
-const userReference = require('electron').remote.require('electron-settings');
+const userReference = require('electron-settings');
 
 export default class LocalUserReference {
     

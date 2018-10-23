@@ -217,13 +217,13 @@ module.exports.manageWallet = function(isNewPin, pin, importedPhrase, coinTypes,
         let addresses = createAddressList(wallets, pin, coinTypes);
         let publicKey = wallets[0].neutered().toBase58();
         if (isWebPlatform()) {
-            var {remote} = require('electron');
-            var main = remote.require("./main.js");
-            main.services.updateWalletInfo().then(function() {
+            let {ipcRenderer} = require('electron');
+            let result_data = ipcRenderer.sendSync("update-wallet-info", null);
+            if (result_data && result_data.status == "SUCCESS") {
                 if (typeof callback === 'function') {
                     callback(null, null);
                 }
-            }, function(err) {});
+            }
         } else {
             registerWalletAndSyncAddress(publicKey, addresses, (error, result) => {
                 console.log("Callback after registering wallet.");
@@ -242,13 +242,13 @@ module.exports.manageWallet = function(isNewPin, pin, importedPhrase, coinTypes,
         if (isEqual) {
           // Check wallet is registered on server or not
           if (isWebPlatform()) {
-              var {remote} = require('electron');
-              var main = remote.require("./main.js");
-              main.services.updateWalletInfo().then(function() {
-                  if (typeof callback === 'function') {
-                      callback(null, null);
-                  }
-              }, function(err) {});
+              let {ipcRenderer} = require('electron');
+              let result_data = ipcRenderer.sendSync("update-wallet-info", null);
+              if (result_data && result_data.status == "SUCCESS") {
+                if (typeof callback === 'function') {
+                    callback(null, null);
+                }
+              }
           } else {
             AsyncStorage.getItem(Constant.FLAG_PUBLIC_KEY, (error, result) => {
               if (!error && result) {

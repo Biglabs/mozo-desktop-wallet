@@ -58,8 +58,9 @@ function responseToReceiver(result, jsonData) {
     };
     let responseUrl = '';
     if (isWebPlatform()) {
-        let main = require('electron').remote.require("./main.js");
-        main.handleMainRequest(responseData);
+        let {ipcRenderer} = require('electron');
+        ipcRenderer.send("handle-main-request", responseData);
+
     } else {
       responseUrl = `${jsonData.receiver}://${JSON.stringify(responseData)}`;
       Linking.openURL(responseUrl).then().catch(error =>

@@ -29,9 +29,7 @@ import autosuggest_theme from './autosuggest_theme.css';
 
 
 let R = require('ramda');
-let {remote} = require('electron');
-let main = remote.require('./main');
-let address_book = remote.require('./utils/addressbook');
+let {ipcRenderer} = require('electron');
 
 export default class CreateTransactionScreen extends React.Component {
 
@@ -49,13 +47,15 @@ export default class CreateTransactionScreen extends React.Component {
     }
 
     componentDidMount() {
-        let balance_info = main.services.getWalletBalance("SOLO");
+        let balance_info = ipcRenderer.sendSync(
+            "get-balance-info", { "network" : "SOLO" });
         if (balance_info) {
             this.setState({mozo_balance: balance_info.balance});
             this._from_address = balance_info.address;
         }
         this._balance_interval = setInterval(() => {
-            balance_info = main.services.getWalletBalance("SOLO");
+            balance_info = ipcRenderer.sendSync(
+                "get-balance-info", { "network" : "SOLO" });
             if (balance_info) {
                 this.setState({mozo_balance: balance_info.balance});
             }
@@ -101,7 +101,7 @@ export default class CreateTransactionScreen extends React.Component {
           return [];
         }
       
-        let address_book_data = address_book.get();
+        let address_book_data = ipcRenderer.sendSync("address-book-get", null);
         let found_address_book =
             R.filter(
                 x => x.name.includes(value_data) || x.soloAddress.includes(value_data),
@@ -150,21 +150,27 @@ export default class CreateTransactionScreen extends React.Component {
             'value' : mozo_value,
             'network' : this._coin.network
         };
-        main.services.createTransaction(tx_info).then((tx_data) => {
-            let request_data = {
-                coinType: "SOLO",
-                network: "SOLO",
-                action: "SIGN",
-                params: tx_data,
-            };
-            request_data = JSON.parse(JSON.stringify(request_data));
-            Actions.jump('trans_confirm', {txData: request_data});
-        }, (error) => {
-            if (!error.code == "ERR-094") {
-                console.log(error);
-                Actions.pop();
+        let result_data = ipcRenderer.sendSync("create-transaction", tx_info);
+        if (result_data) {
+            if (result_data.status == "SUCCESS") {
+                let request_data = {
+                    coinType: "SOLO",
+                    network: "SOLO",
+                    action: "SIGN",
+                    params: result_data.data,
+                };
+                request_data = JSON.parse(JSON.stringify(request_data));
+                Actions.jump('trans_confirm', {txData: request_data});
+            } else {
+                let error_data = result_data.error;
+                if (error_data.code != "ERR-094") {
+                    console.log(error_data);
+                    Actions.pop();
+                }
             }
-        });
+        } else {
+            Actions.pop();
+        }
     }
 
     render() {

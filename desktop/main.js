@@ -23,7 +23,11 @@ proxy.start();
 const websocket_server = require('./websocket/websocket_server');
 websocket_server.start()
 
+const websocket_client = require('./websocket/websocket_client');
+
 const services = require('./utils/services');
+
+const address_book = require('./utils/addressbook');
 
 const { app, BrowserWindow, protocol } = require('electron');
 const app_config = require("./app_settings").APP_SETTINGS;
@@ -104,7 +108,7 @@ const createWindow = () => {
   });
 
   //hide default menu of browser
-  mainWindow.setMenu(null);
+  // mainWindow.setMenu(null);
   //open dev tools
   // mainWindow.webContents.openDevTools();
 
@@ -173,6 +177,7 @@ app.on('ready', () => {
 app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
+  websocket_client.disconnect();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -285,10 +290,57 @@ exports.sendMessageToRender = (param) => {
   // console.log("send-message-to-render: " + param);
 };
 
-ipc.on('handle-main-request', (event, arg) => {
+ipc.on("handle-main-request", (event, arg) => {
   if (arg && arg.action == "SIGN") {
     services.sendSignRequest(arg);
   }
+});
+
+ipc.on("update-wallet-info", (event, arg) => {
+  services.updateWalletInfo().then(() => {
+    event.returnValue = { "status" : "SUCCESS" };
+  }, () => {
+    event.returnValue = { "status" : "ERROR" };
+  });
+});
+
+ipc.on("get-balance-info", (event, arg) => {
+  event.returnValue = services.getWalletBalance(arg.network);
+});
+
+ipc.on("logout-app", (event, arg) => {
+  services.logOut();
+});
+
+ipc.on("create-transaction", (event, arg) => {
+  let result_data = {};
+  services.createTransaction(arg).then((tx_data) => {
+    result_data["status"] = "SUCCESS";
+    result_data["data"] = tx_data;
+    event.returnValue = result_data;
+  }, (error) => {
+    result_data["status"] = "ERROR";
+    result_data["error"] = error;
+    event.returnValue = result_data;
+  });
+});
+
+ipc.on("send-signed-request-to-server", (event, arg) => {
+  let result_data = {};
+
+  services.sendSignRequestToServer(arg).then((tx_data) => {
+    result_data["status"] = "SUCCESS";
+    result_data["data"] = tx_data;
+    event.returnValue = result_data;
+  }, (error) => {
+    result_data["status"] = "ERROR";
+    result_data["error"] = error;
+    event.returnValue = result_data;
+  });
+});
+
+ipc.on("address-book-get", (event, arg) => {
+  event.returnValue = address_book.get();
 });
 
 exports.handleMainRequest = (param) => {
