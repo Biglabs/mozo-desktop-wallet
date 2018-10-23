@@ -14,8 +14,8 @@ let request = {
   logLevel : 'debug',
   transport : 'websocket',
   fallbackTransport: 'long-polling',
-  reconnectInterval: 1000,
-  ackInterval: 15000,
+  reconnectInterval: 5000,
+  ackInterval: 5000,
   maxReconnectOnClose: 99
 };
 
@@ -34,6 +34,8 @@ request.onMessage = function (response) {
     for(var key in listeners) {
       listeners[key](json_data);
     }
+  } else {
+    console.log(response_body);
   }
 };
 
@@ -50,6 +52,9 @@ function removeListener(listener) {
 }
 
 function connect(connection_uri) {
+  if (socket_client) {
+    return;
+  }
   let token_header = oauth2.tokenHeader();
   if (token_header) {
     request.url = connection_uri;
