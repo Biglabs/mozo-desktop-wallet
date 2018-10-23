@@ -344,7 +344,7 @@ function createTransaction(tx_info) {
     });
   }
 
-  if (balance_info.balance < tx_info.value) {
+  if (balance_info.balance == 0 || balance_info.balance < tx_info.value) {
     return new Promise((resolve, reject) => {
       reject(ERRORS.NOT_ENOUGH_BALANCE);
     });
