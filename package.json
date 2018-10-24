@@ -238,11 +238,13 @@
       "license": "./assets/installation/EULA.txt"
     },
     "mac": {
-      "category": "signer.biglabs.com.crypto"
+      "category": "signer.biglabs.com.crypto",
+      "icon" : "./assets/icon/mozo_offchain.icns"
     },
     "linux": {
       "target": "deb",
-      "category": "Internet"
+      "category": "Internet",
+      "icon" : "./assets/icon/mozo_offchain.png"
     },
     "protocols": {
       "name": "solosigner",
