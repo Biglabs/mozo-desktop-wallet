@@ -31,18 +31,21 @@ export default class HomeScreen extends React.Component {
     }
 
     componentDidMount() {
-        let balance_info = ipcRenderer.sendSync(
+        let result_data = ipcRenderer.sendSync(
             "get-balance-info", { "network" : "SOLO" });
-        if (balance_info) {
-            this.setState({mozo_balance: balance_info.balance});
+        if (result_data.status == "SUCCESS") {
+            this.setState({mozo_balance: result_data.data.balance});
+        } else {
+            this.setState({mozo_balance: 0});
         }
+
         this._balance_interval = setInterval(() => {
-            balance_info = ipcRenderer.sendSync(
+            result_data = ipcRenderer.sendSync(
                 "get-balance-info", { "network" : "SOLO" });
-            if (balance_info) {
-                this.setState({mozo_balance: balance_info.balance});
+            if (result_data.status == "SUCCESS") {
+                this.setState({mozo_balance: result_data.data.balance});
             }
-        }, 1000);
+        }, 2000);
         this.manageScheme();
     }
 
@@ -75,7 +78,7 @@ export default class HomeScreen extends React.Component {
                     /> 
                 </View>
             );
-        }else {
+        } else {
             return (
                 <View style={styles.toolbar}>
                     <SvgView
@@ -174,6 +177,8 @@ export default class HomeScreen extends React.Component {
     }
 
   logOutApp() {
+    clearInterval(this._balance_interval);
+    this._balance_interval = null;
     if(Platform.OS.toUpperCase() === "WEB"){
       ipcRenderer.send("logout-app");
     }

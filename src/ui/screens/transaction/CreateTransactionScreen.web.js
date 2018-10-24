@@ -47,19 +47,22 @@ export default class CreateTransactionScreen extends React.Component {
     }
 
     componentDidMount() {
-        let balance_info = ipcRenderer.sendSync(
+        let result_data = ipcRenderer.sendSync(
             "get-balance-info", { "network" : "SOLO" });
-        if (balance_info) {
-            this.setState({mozo_balance: balance_info.balance});
-            this._from_address = balance_info.address;
+        if (result_data.status == "SUCCESS") {
+            this.setState({mozo_balance: result_data.data.balance});
+            this._from_address = result_data.data.address;
+        } else {
+            this.setState({mozo_balance: 0});
         }
+
         this._balance_interval = setInterval(() => {
-            balance_info = ipcRenderer.sendSync(
+            result_data = ipcRenderer.sendSync(
                 "get-balance-info", { "network" : "SOLO" });
-            if (balance_info) {
-                this.setState({mozo_balance: balance_info.balance});
+            if (result_data.status == "SUCCESS") {
+                this.setState({mozo_balance: result_data.data.balance});
             }
-        }, 1000);
+        }, 2000);
     }
 
     componentWillUnmount() {

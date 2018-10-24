@@ -40,7 +40,11 @@ function downloadAddressBook(callback) {
 }
 
 function getAddressBook() {
-  return userReference.get(CONSTANTS.ADDRESS_BOOK);
+  let address_book_data = userReference.get(CONSTANTS.ADDRESS_BOOK);
+  if (!address_book_data) {
+    return null;
+  }
+  return address_book_data;
 }
 
 function findFromAddressBook(keyword) {

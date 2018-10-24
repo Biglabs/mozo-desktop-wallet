@@ -182,10 +182,10 @@ function getUserProfile() {
         if (response.statusCode == 200) {
           // console.log("User profile: " + body);
           user_profile = JSON.parse(body);
-          extractWalletData(user_profile.walletInfo);
-          getOffchainTokenInfo();
-          address_book.download();
           getExchangeRateInfo();
+          getOffchainTokenInfo();
+          extractWalletData(user_profile.walletInfo);
+          address_book.download();
           updateWalletBalance();
           if (!exchange_rate_interval) {
             // Get exchange every 10 minutes

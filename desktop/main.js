@@ -305,7 +305,16 @@ ipc.on("update-wallet-info", (event, arg) => {
 });
 
 ipc.on("get-balance-info", (event, arg) => {
-  event.returnValue = services.getWalletBalance(arg.network);
+  let result_data = {};
+  let balance_data = services.getWalletBalance(arg.network);
+  if (balance_data) {
+    result_data["status"] = "SUCCESS";
+    result_data["data"] = balance_data;
+  } else {
+    result_data["status"] = "ERROR";
+    result_data["data"] = null;
+  }
+  event.returnValue = result_data;
 });
 
 ipc.on("logout-app", (event, arg) => {
