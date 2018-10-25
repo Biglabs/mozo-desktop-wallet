@@ -28,14 +28,26 @@ request.onOpen = function(response) {
 request.onMessage = function (response) {
   let response_body = response.responseBody;
   let split_data = response_body.split("|");
-  if (split_data[0] == "289") {
-    let json_data = JSON.parse(split_data[1]);
-    json_data.content = JSON.parse(json_data.content);
+  let json_data = null;
+  if (split_data.length > 1) {
+    try {
+      json_data = JSON.parse(split_data[1]);
+    } catch (err) {
+      console.log(response_body);
+    }
+  }
+
+  if (json_data) {
+    console.log(json_data);
+    if (json_data.content) {
+      try {
+        json_data.content = JSON.parse(json_data.content);
+      } catch (err) {
+      }
+    }
     for(var key in listeners) {
       listeners[key](json_data);
     }
-  } else {
-    console.log(response_body);
   }
 };
 

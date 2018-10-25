@@ -7,12 +7,20 @@ const app_config = require("../app_settings").APP_SETTINGS;
 const CONSTANTS = require("../constants").CONSTANTS;
 const ERRORS = require("../constants").ERRORS;
 
+const websocket_client = require('./websocket_client');
 
-const server_host = app_config.websocket_server.host;
 const port = app_config.websocket_server.port;
 const public_host = app_config.websocket_server.public_host;
 
 let clients = [];
+
+function handleNotification(json_data) {
+  if (json_data && json_data.content && json_data.content.event) {
+    R.map(x => {
+      x.sendUTF(JSON.stringify(json_data));
+    }, clients);
+  }
+}
 
 let startServer = module.exports.start = function() {
   const server = http.createServer(function(request, response) {
@@ -22,6 +30,7 @@ let startServer = module.exports.start = function() {
   server.listen(port, public_host, async () => {
     console.log("Websocket server is listen on host: " + public_host +
                " port: " + port + "!");
+    websocket_client.addListener("websocket_server", handleNotification);
   });
 
   // create the server
