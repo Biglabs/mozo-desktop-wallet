@@ -337,6 +337,8 @@ function createTransaction(tx_info) {
     });
   }
 
+  tx_info.to = tx_info.to.trim();
+
   let balance_info = getWalletBalance("SOLO");
   if (!balance_info) {
     return new Promise((resolve, reject) => {
