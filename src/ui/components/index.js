@@ -10,6 +10,7 @@ import SelectionGroup from './widgets/SelectionGroup';
 import SoloText from './widgets/SoloText';
 import SoloTextInput from './widgets/SoloTextInput';
 import SoloSVG from './widgets/SoloSVG';
+import AutoComplete from './widgets/AutoComplete.web';
 
 // noinspection JSUnusedGlobalSymbols
 module.exports = {
@@ -26,5 +27,6 @@ module.exports = {
     SelectionGroup: SelectionGroup,
     SvgView: SoloSVG,
     Text: SoloText,
-    TextInput: SoloTextInput
+    TextInput: SoloTextInput,
+    AutoComplete: AutoComplete
 };

@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.3.0",
+    "@material-ui/core": "^3.3.2",
     "assert": "^1.1.1",
     "asyncstorage-down": "^4.0.1",
     "atmosphere.js": "^2.3.6",
@@ -239,12 +240,12 @@
     },
     "mac": {
       "category": "signer.biglabs.com.crypto",
-      "icon" : "./assets/icon/mozo_offchain.icns"
+      "icon": "./assets/icon/mozo_offchain.icns"
     },
     "linux": {
       "target": "deb",
       "category": "Internet",
-      "icon" : "./assets/icon/mozo_offchain.png"
+      "icon": "./assets/icon/mozo_offchain.png"
     },
     "protocols": {
       "name": "solosigner",

@@ -1,6 +1,6 @@
 import React from "react";
-import {ActivityIndicator, Alert, AppState, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Actions} from 'react-native-router-flux';
+import { ActivityIndicator, Alert, AppState, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 
 import Constants from '../../../helpers/Constants';
 
@@ -17,7 +17,25 @@ import {
     fontRegular,
     icons
 } from '../../../res';
-import {ScreenHeaderActions, SvgView, Text, TextInput} from "../../components";
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import blue from '@material-ui/core/colors/blue';
+const theme = createMuiTheme({
+    typography: {
+        fontSize: 13,
+    },
+    dense: {
+        marginTop: 40
+    },
+    palette: {
+        primary: {...blue, 
+            main: "#4e94f3"
+        }
+      }
+});
+import { ScreenHeaderActions, SvgView, Text, TextInput, AutoComplete } from "../../components";
+import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import Button from '@material-ui/core/Button';
 import { strings } from '../../../helpers/i18nUtils';
 import Constant from '../../../helpers/Constants';
 import Globals from '../../../services/GlobalService';
@@ -29,7 +47,7 @@ import autosuggest_theme from './autosuggest_theme.css';
 
 
 let R = require('ramda');
-let {ipcRenderer} = require('electron');
+let { ipcRenderer } = require('electron');
 
 export default class CreateTransactionScreen extends React.Component {
 
@@ -41,26 +59,43 @@ export default class CreateTransactionScreen extends React.Component {
             mozo_balance: 0,
             mozo_value: '',
             to_address: '',
-            to_addresses_suggestions: []
+            to_addresses_suggestions: [],
+            addressIsWrong: false,
+            amountIsWrong: false
         };
         this._coin = Constants.COIN_TYPE.SOLO;
     }
 
     componentDidMount() {
+        let {to_address, mozo_value} = this.state
+        let addressIsWrong = false, amountIsWrong = false
+        if (to_address.trim() != "" && !(/^(0x)?[0-9a-fA-F]{40}$/.test(to_address.trim()))) {
+            addressIsWrong = true
+        } 
+      
+        if (mozo_value.trim() != "" && isNaN(mozo_value)) {
+            amountIsWrong = true
+        } 
+
+        this.setState({
+            addressIsWrong: addressIsWrong,
+            amountIsWrong: amountIsWrong
+        })
+
         let result_data = ipcRenderer.sendSync(
-            "get-balance-info", { "network" : "SOLO" });
+            "get-balance-info", { "network": "SOLO" });
         if (result_data.status == "SUCCESS") {
-            this.setState({mozo_balance: result_data.data.balance});
+            this.setState({ mozo_balance: result_data.data.balance });
             this._from_address = result_data.data.address;
         } else {
-            this.setState({mozo_balance: 0});
+            this.setState({ mozo_balance: 0 });
         }
 
         this._balance_interval = setInterval(() => {
             result_data = ipcRenderer.sendSync(
-                "get-balance-info", { "network" : "SOLO" });
+                "get-balance-info", { "network": "SOLO" });
             if (result_data.status == "SUCCESS") {
-                this.setState({mozo_balance: result_data.data.balance});
+                this.setState({ mozo_balance: result_data.data.balance });
             }
         }, 2000);
     }
@@ -69,22 +104,37 @@ export default class CreateTransactionScreen extends React.Component {
         clearInterval(this._balance_interval);
     }
 
-    renderSuggestion(suggestion, { query }) {
+    renderSuggestion(suggestion, { query, isHighlighted }) {
         const matches = AutosuggestHighlightMatch(suggestion.name, query);
         const parts = AutosuggestHighlightParse(suggestion.name, matches);
-      
+
         return (
-          <span>
-            {parts.map((part, index) => {
-              const className = part.highlight ? 'react-autosuggest__suggestion-match' : null;
-      
-              return (
-                <span className={className} key={index}>
-                  {part.text}
-                </span>
-              );
-            })}
-          </span>
+            //   <span>
+            //     {parts.map((part, index) => {
+            //       const className = part.highlight ? 'react-autosuggest__suggestion-match' : null;
+
+            //       return (
+            //         <span className={className} key={index}>
+            //           {part.text}
+            //         </span>
+            //       );
+            //     })}
+            //   </span>
+            <MenuItem selected={isHighlighted} component="div">
+                <div>
+                    {parts.map((part, index) => {
+                        return part.highlight ? (
+                            <span key={String(index)} style={{ fontWeight: 500 }}>
+                                {part.text}
+                            </span>
+                        ) : (
+                                <strong key={String(index)} style={{ fontWeight: 300 }}>
+                                    {part.text}
+                                </strong>
+                            );
+                    })}
+                </div>
+            </MenuItem>
         );
     }
 
@@ -101,9 +151,9 @@ export default class CreateTransactionScreen extends React.Component {
     getSuggestions(value) {
         let value_data = value.trim();
         if (value_data === '') {
-          return [];
+            return [];
         }
-      
+
         let address_book_data = ipcRenderer.sendSync("address-book-get", null);
         let found_address_book =
             R.filter(
@@ -130,16 +180,29 @@ export default class CreateTransactionScreen extends React.Component {
     }
 
     doFilterNumber(text_data) {
+        let amountIsWrong = false
+        if (text_data.toString().trim() == "" || isNaN(text_data)) {
+            this.amountIsWrong = true
+        }
+
         this.setState({
             mozo_value: text_data.replace(/[^0-9\.]/g, ''),
+            amountIsWrong: amountIsWrong
         });
     }
 
     onAddressChange = (event, { newValue, method }) => {
+        console.log("newValue", newValue)
+        let addressIsWrong = false
+        if (newValue.trim() == "" || !(/^(0x)?[0-9a-fA-F]{40}$/.test(newValue.trim()))) {
+            addressIsWrong = true
+        } 
+
         this.setState({
-            to_address: newValue
+            to_address: newValue,
+            addressIsWrong: addressIsWrong
         });
-      };
+    };
 
     doCreateTransaction() {
         let to_address = this.state.to_address.trim();
@@ -149,12 +212,13 @@ export default class CreateTransactionScreen extends React.Component {
             return;
         }
         let tx_info = {
-            'from' : this._from_address,
-            'to' : to_address,
-            'value' : mozo_value,
-            'network' : this._coin.network
+            'from': this._from_address,
+            'to': to_address,
+            'value': mozo_value,
+            'network': this._coin.network
         };
         let result_data = ipcRenderer.sendSync("create-transaction", tx_info);
+        this.setState({pressedConfirm: false})
         if (result_data) {
             if (result_data.status == "SUCCESS") {
                 let request_data = {
@@ -164,7 +228,7 @@ export default class CreateTransactionScreen extends React.Component {
                     params: result_data.data,
                 };
                 request_data = JSON.parse(JSON.stringify(request_data));
-                Actions.jump('trans_confirm', {txData: request_data});
+                Actions.jump('trans_confirm', { txData: request_data });
             } else {
                 let error_data = result_data.error;
                 if (error_data.code != "ERR-094") {
@@ -179,26 +243,27 @@ export default class CreateTransactionScreen extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}>
-                <ScreenHeaderActions
-                    title='Send MOZO'
-                    backgroundColor={colorPrimary}
-                    accentColor='#ffffff'
-                    onBackPress={() => {
-                        Actions.reset('home');
-                    }}
-                />
+            <MuiThemeProvider theme={theme}>
+                <View style={styles.container}>
+                    <ScreenHeaderActions
+                        title='Send MOZO'
+                        backgroundColor={colorPrimary}
+                        accentColor='#ffffff'
+                        onBackPress={() => {
+                            Actions.reset('home');
+                        }}
+                    />
 
-                <View style={styles.content}>
+                    <View style={styles.content}>
 
-                    <Text style={styles.text_value}>
-                        Spendable:
+                        {/* <Text style={styles.text_value}>
+                            Spendable:
                         {this.state.mozo_balance} {(this._coin.displayName || '').toUpperCase()}
-                    </Text>
+                        </Text> */}
 
-                    <View style={styles.dash}/>
+                        {/* <View style={styles.dash} /> */}
 
-                    <Text style={styles.text_section}>To: </Text>
+                        {/* <Text style={styles.text_section}>To: </Text>
                     <Autosuggest
                         theme={autosuggest_theme}
                         suggestions={this.state.to_addresses_suggestions}
@@ -212,11 +277,20 @@ export default class CreateTransactionScreen extends React.Component {
                             value: this.state.to_address,
                             onChange: this.onAddressChange
                         }}
-                    />
+                    /> */}
+                        <AutoComplete
+                            inputProps={{
+                                label: "Receiver Address",
+                                placeholder: "Receiver's address"
+                            }}
+                            onChange={(e, value) => this.onAddressChange(e, value)}
+                            getSuggestionData={(value) => this.getSuggestions(value)}
+                            getSuggestionValue={this.getSuggestionValue}
+                            renderSuggestion={this.renderSuggestion} />
 
-                    <View style={styles.dash}/>
+                        {/* <View style={styles.dash}/> */}
 
-                    <Text style={styles.text_section}>Ammount: </Text>
+                        {/* <Text style={styles.text_section}>Ammount: </Text>
                     <TextInput
                         style={styles.search_input}
                         placeholder="Mozo ammount"
@@ -226,36 +300,63 @@ export default class CreateTransactionScreen extends React.Component {
                         onChangeText={(text) => {
                             this.doFilterNumber(text);
                         }}
-                    />
+                    /> */}
+                        <TextField
+                            id="standard-uncontrolled"
+                            label="Ammount"
+                            value={this.state.mozo_value}
+                            fullWidth
+                            margin="normal"
+                            style = {{marginTop: 24}}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            inputProps={{
+                                placeholder: "Mozo ammount",
+                            }}
+                            onChange={(e) => {
+                                this.doFilterNumber(e.target.value);
+                            }}
+                        />
+                        <Text style={styles.text_small}>
+                            Spendable:
+                            <Text style={styles.text_primary}>{this.state.mozo_balance} {(this._coin.displayName || '').toUpperCase()}</Text>
+                        </Text>
 
-                    <View style={styles.dash}/>
+                        {/* <View style={styles.dash}/> */}
 
-                    <TouchableOpacity
-                        style={styles.button_confirm}
-                        onPressIn={() => this.setState({pressedConfirm: true})}
-                        onPressOut={() => {
-                            this.setState({pressedConfirm: false});
-                            this.doCreateTransaction();
-                        }}
-                    >
-                        <SvgView
-                            fill={colorPrimary}
-                            width={20}
-                            height={20}
-                            svg={icons.icCheck}/>
-                        <Text style={styles.text_confirm}>Confirm</Text>
-                    </TouchableOpacity>
+                        {/* <TouchableOpacity
+                            onPressIn={() => this.setState({ pressedConfirm: true })}
+                            onPressOut={() => {
+                                this.setState({ pressedConfirm: false });
+                                this.doCreateTransaction();
+                            }}
+                        >
+                            <Button  style = {{marginTop: 36}}
+                                disableRipple="true" variant="contained" size="large" color="primary" fullWidth>
+                                Continue
+                            </Button>
+                        </TouchableOpacity> */}
 
-                    <View style={styles.dash}/>
+                         <Button 
+                            disabled={this.state.addressIsWrong || this.state.to_address.trim() == "" || this.state.amountIsWrong || this.state.mozo_value.trim() == "" || this.state.pressedConfirm}
+                            onClick={() => {
+                                this.setState({ pressedConfirm: true });
+                                this.doCreateTransaction();
+                            }} style = {{marginTop: 36}}
+                                disableRipple="true" variant="contained" size="large" color="primary" fullWidth>
+                                Continue
+                        </Button>
 
-                    {/* <View style={styles.confirmation_footer}>
+                        {/* <View style={styles.confirmation_footer}>
                         <Text style={styles.text_reject} onPress={() => {
                             this.cancelTransaction();
                         }}>Reject</Text>
                     </View> */}
 
+                    </View>
                 </View>
-            </View>
+            </MuiThemeProvider>
         )
     }
 }
@@ -304,6 +405,12 @@ const styles = StyleSheet.create({
     text_value: {
         color: colorPrimary,
         fontSize: 25
+    },
+    text_small: {
+        fontSize: "70%"
+    },
+    text_primary: {
+        color: colorPrimary
     },
     text_usd: {
         color: '#c1c1c1',
