@@ -53,21 +53,21 @@ Apply for MacOS, Windows, and Linux
 #### Ubuntu
 Run the following commands to create the `deb` package to distribute and install
 ```bash
-yarn && yarn webpack && yarn buid:linux && yarn dist:linux
+yarn && yarn dist:linux
 ```
 The `deb` file will be output in the `project directory\dist` directory
 
 #### Windows
 Run the following commands to create the `exe` package to distribute and install
 ```batch
-yarn && yarn webpack && yarn build:win && yarn dist:win
+yarn && yarn dist:win
 ```
 The `exe` file will be output in the `project directory\dist` directory
 
 #### MacOS
 From the shell, type `bash` to use BASH, then run the following commands to create the `dmg` package to distribute and install
 ```batch
-yarn && yarn webpack && yarn build:mac && yarn dist:mac
+yarn && yarn dist:mac
 ```
 The `dmg` file will be output in the `project directory\dist` directory
 

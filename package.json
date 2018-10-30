@@ -19,12 +19,9 @@
     "webpack-server": "webpack-serve",
     "pack": "build --dir",
     "dist": "build",
-    "build:win": "cd desktop && yarn && cd .. && build --win --dir",
-    "build:mac": "cd desktop && yarn && cd .. && build --mac --dir",
-    "build:linux": "cd desktop && yarn && cd .. && build --linux --dir",
-    "dist:win": "cd desktop && yarn && cd .. && build --win",
-    "dist:linux": "cd desktop && yarn && cd .. && build --linux",
-    "dist:mac": "cd desktop && yarn && cd .. && build --mac"
+    "dist:win": "webpack --mode=production && cd desktop && yarn && cd .. && build --win",
+    "dist:linux": "webpack --mode=production && cd desktop && yarn && cd .. && build --linux",
+    "dist:mac": "webpack --mode=production && cd desktop && yarn && cd .. && build --mac"
   },
   "rnpm": {
     "assets": [
@@ -48,7 +45,6 @@
     "console-browserify": "^1.1.0",
     "constants-browserify": "^1.0.0",
     "crypto-js": "^3.1.9-1",
-    "css-loader": "^1.0.0",
     "dns.js": "^1.0.1",
     "domain-browser": "^1.1.1",
     "electron-settings": "^3.2.0",
@@ -114,7 +110,6 @@
     "simple-oauth2": "^2.2.1",
     "stream-browserify": "^1.0.0",
     "string_decoder": "~0.10.25",
-    "style-loader": "^0.23.1",
     "svgs": "^3.2.1",
     "timers-browserify": "^1.0.1",
     "tty-browserify": "0.0.0",
