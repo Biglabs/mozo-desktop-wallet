@@ -13,6 +13,7 @@
     "express": "^4.16.4",
     "global": "^4.3.2",
     "grpc": "^1.14.1",
+    "log4js": "^3.0.6",
     "protobufjs": "^6.8.8",
     "punycode": "^1.4.1",
     "ramda": "^0.25.0",

@@ -4,6 +4,8 @@ var request = require('request');
 const R = require('ramda');
 
 const main = require('../main');
+const logger = require('./logger');
+const log = logger.getLogger("address-book");
 const oauth2 = require('./oauth2');
 const common = require('./common');
 const CONSTANTS = require("../constants").CONSTANTS;
@@ -23,18 +25,19 @@ function downloadAddressBook(callback) {
   request(options, function(error, response, body) {
     if (!error) {
       if (response.statusCode == 200) {
+        log.debug(body);
         const address_book = JSON.parse(body);
         userReference.set(CONSTANTS.ADDRESS_BOOK, address_book);
         if (callback) {
           callback(address_book);
         }
       } else {
-        // console.log(response.statusCode);
-        // console.log(body);
+        log.error(response.statusCode);
+        log.error(body);
         callback(null);
       }
     } else {
-      // console.log(error);
+      log.error(error);
     }
   });
 }
@@ -81,12 +84,12 @@ function addAddressBook(data) {
           downloadAddressBook();
           resolve(body);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           resolve(null);
         }
       } else {
-        // console.log(error);
+        log.error(error);
         reject(error);
       }
     });
@@ -115,12 +118,12 @@ function updateAddressBook(data) {
           downloadAddressBook();
           resolve(body);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           resolve(null);
         }
       } else {
-        // console.log(error);
+        log.error(error);
         reject(error);
       }
     });
@@ -139,17 +142,17 @@ function deleteAddressBook(id) {
   return new Promise(function(resolve, reject) {
     request(options, function(error, response, body) {
       if (!error) {
-        // console.log(body);
         if (response.statusCode == 200) {
+          log.debug(body);
           downloadAddressBook();
           resolve(body);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           resolve(null);
         }
       } else {
-        // console.log(error);
+        log.error(error);
         reject(error);
       }
     });

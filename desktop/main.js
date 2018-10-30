@@ -17,6 +17,9 @@ console.log("PATH_APP_NODE_MODULES: " + PATH_APP_NODE_MODULES); */
 // grpcServer.start();
 
 // start proxy server
+const logger = require('./utils/logger');
+const log = logger.getLogger("main");
+
 const proxy = require('./proxy/GrpcProxy');
 proxy.start();
 
@@ -41,7 +44,7 @@ const PROTOCOL_PREFIX = app_config.app.deeplink;
  */
 const userReference = require('electron-settings');
 
-// console.log(JSON.stringify(userReference.getAll(), null, 2));
+log.debug(JSON.stringify(userReference.getAll(), null, 2));
 // userReference.deleteAll();
 
 let mainWindow = null;
@@ -144,7 +147,7 @@ function handleDeepLinkURL(url) {
     try {
       request_data = JSON.parse(split_array[1]);
     } catch(e) {
-      console.log(e);
+      log.error(e);
       return;
     }
 
@@ -178,9 +181,12 @@ app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   websocket_client.disconnect();
-  if (process.platform !== 'darwin') {
+  // if (process.platform !== 'darwin') {
+
+  // }
+  logger.shutdown(() => {
     app.quit();
-  }
+  });
 });
 
 app.on('activate', function () {
@@ -269,7 +275,7 @@ function showMessageDialog(option) {
   };
 
   dialog.showMessageBox(options, function (index) {
-    // console.log("Save file success...");
+    // log.debug("Save file success...");
   });
 }
 
@@ -287,7 +293,7 @@ function showErrorDialog() {
  * @param {*} param
  */
 exports.sendMessageToRender = (param) => {
-  // console.log("send-message-to-render: " + param);
+  // log.debug("send-message-to-render: " + param);
 };
 
 ipc.on("handle-main-request", (event, arg) => {

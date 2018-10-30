@@ -2,6 +2,7 @@
 let socket = require('atmosphere.js');
 
 let oauth2 = require('../utils/oauth2');
+const logger = require('../utils/logger');
 
 let listeners = {};
 
@@ -20,9 +21,10 @@ let request = {
 };
 
 let socket_client = null;
+const log = logger.getLogger("websocket-client");
 
 request.onOpen = function(response) {
-  console.log(response.responseBody);
+  log.debug("On Open - " + response.responseBody);
 };
 
 request.onMessage = function (response) {
@@ -33,12 +35,12 @@ request.onMessage = function (response) {
     try {
       json_data = JSON.parse(split_data[1]);
     } catch (err) {
-      console.log(response_body);
+      log.error("On message: - " + response_body);
     }
   }
 
   if (json_data) {
-    console.log(json_data);
+    log.debug("On message: - " + JSON.stringify(json_data));
     if (json_data.content) {
       try {
         json_data.content = JSON.parse(json_data.content);
@@ -52,14 +54,16 @@ request.onMessage = function (response) {
 };
 
 request.onError = function(response) {
-  console.log(response.responseBody);
+  log.error("On Error - " + response.responseBody);
 };
 
 function addListener(listener, callback) {
+  log.debug("Add listener: " + listener);
   listeners[listener] = callback;
 }
 
 function removeListener(listener) {
+  log.debug("Remove listener: " + listener);
   delete listeners[listener];
 }
 
@@ -83,6 +87,7 @@ function disconnect() {
 }
 
 function sendMsg(json_data) {
+  log.debug("Send message: " + JSON.stringify(json_data));
   socket_client.push(JSON.stringify(json_data));
 };
 

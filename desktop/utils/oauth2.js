@@ -1,5 +1,7 @@
 
 const main = require('../main');
+const logger = require('./logger');
+const log = logger.getLogger("oauth2");
 const app_config = require("../app_settings").APP_SETTINGS;
 const constants = require("../constants").CONSTANTS;
 
@@ -42,7 +44,7 @@ function isTokenValid() {
     userReference.set("OAuth2Token", access_token.token);
     return true;
   }, function(err) {
-    //console.log('Error refreshing access token: ', error.message);
+    log.error('Error refreshing access token: ', error.message);
     userReference.deleteAll();
     main.mainWindow.loadURL(`file://${__dirname}/../index.html`);
     return false;
@@ -76,7 +78,7 @@ exports.getTokenFromAuthCode = function(auth_code, redirect_uri) {
       userReference.set(constants.OAUTH2TOKEN_KEY, access_token.token);
       resolve(access_token);
     }, function(err) {
-      //console.log(err);
+      log.error(err);
       reject(err);
     });
   });

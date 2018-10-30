@@ -7,6 +7,9 @@ const app_config = require("../app_settings").APP_SETTINGS;
 const CONSTANTS = require("../constants").CONSTANTS;
 const ERRORS = require("../constants").ERRORS;
 
+const logger = require('../utils/logger');
+const log = logger.getLogger("websocket-server");
+
 const websocket_client = require('./websocket_client');
 
 const port = app_config.websocket_server.port;
@@ -28,7 +31,7 @@ let startServer = module.exports.start = function() {
     // server we don't have to implement anything.
   });
   server.listen(port, public_host, async () => {
-    console.log("Websocket server is listen on host: " + public_host +
+    log.info("Websocket server is listen on host: " + public_host +
                " port: " + port + "!");
     websocket_client.addListener("websocket_server", handleNotification);
   });
@@ -48,7 +51,7 @@ let startServer = module.exports.start = function() {
     connection.on('message', function(message) {
       if (message.type === 'utf8') {
         // process WebSocket message
-        console.log(message.utf8Data);
+        log.debug(message.utf8Data);
       }
     });
 

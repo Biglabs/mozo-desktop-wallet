@@ -7,7 +7,9 @@ const crypto = require("crypto");
 const main = require('../main');
 const ERRORS = require("../constants").ERRORS;
 const CONSTANTS = require("../constants").CONSTANTS;
+
 const oauth2 = require('./oauth2');
+const logger = require('./logger');
 const {setRequestData} = require('./common');
 const address_book = require('./addressbook');
 const websocket_client = require('../websocket/websocket_client');
@@ -66,6 +68,7 @@ function extractWalletData(walletInfo) {
 }
 
 function getOffchainTokenInfo() {
+  const log = logger.getLogger("getOffchainTokenInfo");
   let options = setRequestData();
   if (!options) {
     return;
@@ -74,27 +77,32 @@ function getOffchainTokenInfo() {
   options.url = mozo_service_host +
     "/api/solo/contract/solo-token";
 
+  log.debug(options);
+
   request(options, function(error, response, body) {
     if (!error) {
-      // console.log(body);
       if (response.statusCode == 200) {
+        log.debug(body);
         token_info = JSON.parse(body);
         userReference.set(CONSTANTS.OFFCHAIN_TOKEN_INFO, token_info);
       } else {
-        // console.log(response.statusCode);
-        // console.log(body);
+        log.error(response.statusCode);
+        log.error(body);
       }
     } else {
-      // console.log(error);
+      log.error(error);
     }
   });
 }
 
 function getExchangeRateInfo() {
+  const log = logger.getLogger("getExchangeRateInfo");
   let options = setRequestData();
   if (!options) {
     return;
   }
+
+  log.debug(options);
 
   let network_name = "SOLO";
 
@@ -107,16 +115,16 @@ function getExchangeRateInfo() {
 
     request(options, function(error, response, body) {
       if (!error) {
-        // console.log(body);
         if (response.statusCode == 200) {
+          log.debug(body);
           exchange_info = JSON.parse(body);
           userReference.set(exchange_rate_name, exchange_info);
         } else {
-          console.log(response.statusCode);
-          console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
         }
       } else {
-        console.log(error);
+        log.error(error);
       }
     });
 
@@ -124,6 +132,7 @@ function getExchangeRateInfo() {
 }
 
 function updateWalletBalance() {
+  const log = logger.getLogger("updateWalletBalance");
   let wallet_addrs = userReference.get("Address");
 
   if (!wallet_addrs) {
@@ -152,17 +161,19 @@ function updateWalletBalance() {
   options.url = mozo_service_host +
     "/api/solo/contract/solo-token/balance/" + address;
 
+  log.debug(options);
+
   request(options, function(error, response, body) {
     if (!error) {
       if (response.statusCode == 200) {
         let balance_info = JSON.parse(body);
         userReference.set("Wallet_Balance_SOLO", balance_info);
       } else {
-        console.log(response.statusCode);
-        console.log(body);
+        log.error(response.statusCode);
+        log.error(body);
       }
     } else {
-      console.log(error);
+      log.error(error);
     }
   });
 }
@@ -171,6 +182,7 @@ let exchange_rate_interval = null;
 let update_wallet_balance_interval = null;
 
 function getUserProfile() {
+  const log = logger.getLogger("getUserProfile");
   return new Promise(function(resolve, reject) {
     let options = setRequestData();
     if (!options) {
@@ -180,7 +192,7 @@ function getUserProfile() {
     request(options, function(error, response, body) {
       if (!error) {
         if (response.statusCode == 200) {
-          // console.log("User profile: " + body);
+          log.debug("User profile: " + body);
           user_profile = JSON.parse(body);
           getExchangeRateInfo();
           getOffchainTokenInfo();
@@ -195,7 +207,7 @@ function getUserProfile() {
 
           if (!update_wallet_balance_interval) {
             update_wallet_balance_interval = setInterval(
-              updateWalletBalance, 4000);
+              updateWalletBalance, 15000);
           }
 
           let uuid = crypto.randomBytes(32).toString("hex");
@@ -207,12 +219,12 @@ function getUserProfile() {
         } else if (response.statusCode == 401)  {
           userReference.deleteAll();
         } else {
-          console.log(response.statusCode);
-          console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           reject(body);
         }
       } else {
-        console.log(error);
+        log.error(error);
         reject(error);
       }
     });
@@ -254,6 +266,7 @@ function cleanUpUpdateWalletInfoInverval() {
 }
 
 function updateWalletInfo() {
+  const log = logger.getLogger("updateWalletInfo");
   return new Promise(function(resolve, reject) {
     if (!!send_wallet_info_interval) {
       resolve(null);
@@ -310,14 +323,19 @@ function updateWalletInfo() {
         };
 
         request(options, function(error, response, body) {
-          if (!error && response.statusCode == 200) {
-            userReference.delete(CONSTANTS.IS_NEW_WALLET_KEY);
-            // console.log("User profile: " + JSON.stringify(body));
-            resolve(body);
-            clearInterval(send_wallet_info_interval);
-            send_wallet_info_interval = null;
+          if (!error) {
+            if (response.statusCode == 200) {
+              userReference.delete(CONSTANTS.IS_NEW_WALLET_KEY);
+              log.debug("User profile: " + JSON.stringify(body));
+              resolve(body);
+              clearInterval(send_wallet_info_interval);
+              send_wallet_info_interval = null;
+            } else {
+              log.error(response.statusCode);
+              log.error(body);
+            }
           } else {
-            // console.log(error);
+            log.error(error);
           }
         });
       }, function(err) {});
@@ -331,6 +349,7 @@ function getTokenInfo() {
 };
 
 function createTransaction(tx_info) {
+  const log = logger.getLogger("createTransaction");
   if (!(tx_info && tx_info.from && tx_info.to && tx_info.value)) {
     return new Promise((resolve, reject) => {
       reject(ERRORS.INVALID_REQUEST);
@@ -369,7 +388,7 @@ function createTransaction(tx_info) {
   options.json = true;
   options.body = tx_req;
 
-  // console.log("Request data: " + JSON.stringify(options));
+  log.debug("Request data: " + JSON.stringify(options));
   const token_info = getTokenInfo();
   return new Promise((resolve, reject) => {
     if (token_info) {
@@ -383,17 +402,17 @@ function createTransaction(tx_info) {
       request(options, function(error, response, body) {
         if (!error) {
           if (response.statusCode == 200) {
-            // console.log("Transaction info: " + JSON.stringify(body));
+            log.debug("Transaction info: " + JSON.stringify(body));
             let tx_data = body;
             tx_data.tx.outputs = outputs_tx;
             resolve(tx_data);
           } else {
-            // console.log(response.statusCode);
-            // console.log(body);
+            log.error(response.statusCode);
+            log.error(body);
             reject(ERRORS.INTERNAL_ERROR);
           }
         } else {
-          // console.log(error);
+          log.error(error);
           reject(ERRORS.INTERNAL_ERROR);
         }
       });
@@ -438,6 +457,7 @@ function confirmTransaction(tx_server_req, res_callback) {
 };
 
 function sendSignRequestToServer(signed_req) {
+  const log = logger.getLogger("sendSignRequestToServer");
   return new Promise((resolve, reject) => {
     let options = setRequestData();
     options.url = mozo_service_host + "/api/solo/contract/solo-token/send-signed-tx";
@@ -445,17 +465,19 @@ function sendSignRequestToServer(signed_req) {
     options.json = true;
     options.body = signed_req;
 
+    log.debug(options);
+
     request(options, function(error, response, body) {
       if (!error) {
         if (response.statusCode == 200) {
           resolve(body);
         } else {
-          console.log(response.statusCode);
-          console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           reject(ERRORS.INTERNAL_ERROR);
         }
       } else {
-        console.log(error);
+        log.error(error);
         reject(ERRORS.INTERNAL_ERROR);
       }
     });
@@ -534,6 +556,7 @@ function getWalletBalance(network_data) {
 };
 
 function getTransactionHistory(network, page_num, size_num) {
+  const log = logger.getLogger("getTransactionHistory");
   return new Promise(function(resolve, reject) {
     let wallet_addrs = userReference.get("Address");
 
@@ -566,6 +589,8 @@ function getTransactionHistory(network, page_num, size_num) {
     options.url = mozo_service_host +
       "/api/solo/contract/solo-token/txhistory/" + address +
       "?page=" + page_num + "&size=" + size_num;
+
+    log.debug(options);
 
     request(options, function(error, response, body) {
       if (!error) {
@@ -605,12 +630,12 @@ function getTransactionHistory(network, page_num, size_num) {
           }, txhistory);
           resolve(txhistory);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           resolve(null);
         }
       } else {
-        // console.log(error);
+        log.error(error);
         reject(error);
       }
     });
@@ -618,6 +643,7 @@ function getTransactionHistory(network, page_num, size_num) {
 };
 
 function getTxHashStatus(txhash) {
+  const log = logger.getLogger("getTxHashStatus");
   return new Promise(function(resolve, reject) {
     if (!txhash) {
       return;
@@ -626,18 +652,20 @@ function getTxHashStatus(txhash) {
     let options = setRequestData();
     options.url = mozo_service_host + "/api/eth/solo/txs/" + txhash + "/status";
 
+    log.debug(options);
+
     request(options, function(error, response, body) {
       if (!error) {
         let body_parsed = JSON.parse(body);
         if (response.statusCode == 200) {
           resolve(body_parsed);
         } else {
-          // console.log(response.statusCode);
-          // console.log(body);
+          log.error(response.statusCode);
+          log.error(body);
           reject(body_parsed);
         }
       } else {
-        // console.log(error);
+        log.error(error);
         reject(error);
       }
     });
