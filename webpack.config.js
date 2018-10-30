@@ -71,10 +71,6 @@ const electron_render_config = {
       {
         test: /\.svg$/,
         loader: 'raw-loader'
-      },
-      {
-        test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
       }
     ],
   },

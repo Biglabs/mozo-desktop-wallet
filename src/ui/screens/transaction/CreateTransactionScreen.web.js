@@ -43,8 +43,6 @@ import Autosuggest from 'react-autosuggest';
 import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
 
-import autosuggest_theme from './autosuggest_theme.css';
-
 
 let R = require('ramda');
 let { ipcRenderer } = require('electron');
