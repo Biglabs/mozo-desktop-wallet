@@ -180,7 +180,14 @@ export default class CreateTransactionScreen extends React.Component {
     doFilterNumber(text_data) {
         let amountIsWrong = false
         if (text_data.toString().trim() == "" || isNaN(text_data)) {
-            this.amountIsWrong = true
+            amountIsWrong = true;
+        } else if (!(/^\d+(\.\d{1,2})?$/.test(text_data.toString().trim()))) {
+            amountIsWrong = true;
+        } else {
+            let amount_number = parseFloat(text_data.replace(/[^0-9\.]/g, ''));
+            if (amount_number <= 0 || amount_number > this.state.mozo_balance) {
+                amountIsWrong = true;
+            }
         }
 
         this.setState({
@@ -193,8 +200,12 @@ export default class CreateTransactionScreen extends React.Component {
         console.log("newValue", newValue)
         let addressIsWrong = false
         if (newValue.trim() == "" || !(/^(0x)?[0-9a-fA-F]{40}$/.test(newValue.trim()))) {
-            addressIsWrong = true
-        } 
+            addressIsWrong = true;
+        }
+
+        if (newValue.trim() == this._from_address) {
+            addressIsWrong = true;
+        }
 
         this.setState({
             to_address: newValue,
