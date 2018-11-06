@@ -3,6 +3,7 @@ const R = require('ramda');
 let request = require('request');
 
 const ERRORS = require("../constants").ERRORS;
+const STORE_ERRORS = require("../constants").STORE_ERRORS;
 const CONSTANTS = require("../constants").CONSTANTS;
 const main = require("../main");
 
@@ -14,6 +15,41 @@ const common = require('./common');
 const app_config = require("../app_settings").APP_SETTINGS;
 const store_service_host = app_config.mozo_services.store_api.host;
 
+
+function getStoreInfo() {
+  let options = common.setRequestData();
+  if (!options) {
+    return new Promise((resolve, reject) => {
+      reject(ERRORS.NO_WALLET);
+    });
+  }
+
+  options.url = store_service_host + "/api/retailer/info";
+
+  return new Promise((resolve, reject) => {
+    request(options, function(error, response, body) {
+      if (!error) {
+        let data = JSON.parse(body);
+        if (response.statusCode == 200) {
+          log.debug(body);
+          resolve(data);
+        } else {
+          log.error(response.statusCode);
+          log.error(body);
+          let error_data = STORE_ERRORS.CANNOT_CREATE_AIR_DROP;
+          error_data.code = data.errorKey;
+          error_data.title = data.title;
+          error_data.detail = data.detail;
+          reject(error_data);
+        }
+      } else {
+        log.error(error);
+        reject(ERRORS.INTERNAL_ERROR);
+      }
+    });
+  });
+
+}
 
 function createAirDropEvent(airdrop_event) {
   let wallet_balance = common.getWalletBalance("SOLO");
@@ -183,9 +219,14 @@ function checkSmartContractHash(smart_contract_hash) {
   return new Promise((resolve, reject) => {
     request(options, function(error, response, body) {
       if (!error) {
+        let data = JSON.parse(body);
         if (response.statusCode == 200) {
           log.debug(body);
-          resolve(body);
+          if (data.status == "SUCCESS") {
+            resolve(data);
+          } else {
+            reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
+          }
         } else {
           log.error(response.statusCode);
           log.error(body);
@@ -212,13 +253,18 @@ function beaconGetBeacon() {
   return new Promise((resolve, reject) => {
     request(options, function(error, response, body) {
       if (!error) {
+        let data = JSON.parse(body);
         if (response.statusCode == 200) {
           log.debug(body);
-          resolve(body);
+          resolve(data);
         } else {
           log.error(response.statusCode);
           log.error(body);
-          reject(ERRORS.INTERNAL_ERROR);
+          let error_data = STORE_ERRORS.CANNOT_CREATE_AIR_DROP;
+          error_data.code = data.errorKey;
+          error_data.title = data.title;
+          error_data.detail = data.detail;
+          reject(error_data);
         }
       } else {
         log.error(error);
@@ -232,6 +278,7 @@ module.exports = {
   'beacon' : {
     'get' : beaconGetBeacon
   },
+  'getStoreInfo' : getStoreInfo,
   'createAirDropEvent' : createAirDropEvent,
   'confirmTransaction' : confirmTransaction,
   'sendSignRequest' : sendSignRequest,

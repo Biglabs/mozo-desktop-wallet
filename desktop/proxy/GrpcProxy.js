@@ -320,12 +320,34 @@ app.get('/transaction/txstatus', (req, res, next) => {
     };
     res.send({ result : response_data });
   }, function(err) {
-    response_data.error = INTERNAL_ERROR;
+    response_data.error = err;
+    res.send({ result : response_data });
+  });
+});
+
+app.get('/store/info', (req, res, next) => {
+  let response_data = {
+    status: "ERROR",
+    error: ERRORS.NO_WALLET
+  };
+  store.getStoreInfo().then(function(data) {
+    response_data = {
+      status: "SUCCESS",
+      data: data,
+      error: null
+    };
+    res.send({ result : response_data });
+  }, function(err) {
+    response_data.error = err;
     res.send({ result : response_data });
   });
 });
 
 app.get('/store/beacon', (req, res, next) => {
+  let response_data = {
+    status: "ERROR",
+    error: ERRORS.NO_WALLET
+  };
   store.beacon.get().then(function(data) {
     response_data = {
       status: "SUCCESS",
@@ -334,7 +356,7 @@ app.get('/store/beacon', (req, res, next) => {
     };
     res.send({ result : response_data });
   }, function(err) {
-    response_data.error = INTERNAL_ERROR;
+    response_data.error = err;
     res.send({ result : response_data });
   });
 });
@@ -406,7 +428,7 @@ app.get('/store/check_airdrop_status', (req, res, next) => {
     };
     res.send({ result : response_data });
   }, function(err) {
-    response_data.error = INTERNAL_ERROR;
+    response_data.error = err;
     res.send({ result : response_data });
   });
 });

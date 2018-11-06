@@ -8,9 +8,6 @@ const CONSTANTS = {
   OFFCHAIN_TOKEN_INFO : "OffchainTokenInfo"
 };
 
-exports.CONSTANTS = CONSTANTS;
-
-
 const ERRORS = {
   CANCEL_REQUEST: {
     code: "ERR-002",
@@ -69,4 +66,17 @@ const ERRORS = {
   }
 };
 
-exports.ERRORS = ERRORS;
+const STORE_ERRORS = {
+  CANNOT_CREATE_AIR_DROP: {
+    code: "ERR-STORE-001",
+    title: "Air drop creation failed",
+    detail: "The air drop event was created failed.",
+    type: "Business"
+  }
+};
+
+module.exports = {
+  'CONSTANTS' : CONSTANTS,
+  'ERRORS' : ERRORS,
+  'STORE_ERRORS' : STORE_ERRORS
+}
