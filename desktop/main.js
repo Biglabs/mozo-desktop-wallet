@@ -28,7 +28,9 @@ websocket_server.start()
 
 const websocket_client = require('./websocket/websocket_client');
 
+const common = require('./utils/common');
 const services = require('./utils/services');
+const store = require('./utils/store');
 
 const address_book = require('./utils/addressbook');
 
@@ -113,7 +115,7 @@ const createWindow = () => {
   //hide default menu of browser
   // mainWindow.setMenu(null);
   //open dev tools
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -297,8 +299,15 @@ exports.sendMessageToRender = (param) => {
 };
 
 ipc.on("handle-main-request", (event, arg) => {
-  if (arg && arg.action == "SIGN") {
-    services.sendSignRequest(arg);
+  if (arg) {
+    switch (arg.action) {
+      case "SIGN":
+        services.sendSignRequest(arg);
+        break;
+      case "SIGN_AIRDROP_SMARTCONTRACT":
+        store.sendSignRequest(arg)
+        break;
+    }
   }
 });
 
@@ -312,7 +321,7 @@ ipc.on("update-wallet-info", (event, arg) => {
 
 ipc.on("get-balance-info", (event, arg) => {
   let result_data = {};
-  let balance_data = services.getWalletBalance(arg.network);
+  let balance_data = common.getWalletBalance(arg.network);
   if (balance_data) {
     result_data["status"] = "SUCCESS";
     result_data["data"] = balance_data;
@@ -368,7 +377,6 @@ exports.handleMainRequest = (param) => {
 module.exports.services = {
   'createTransaction' : services.createTransaction,
   'updateWalletInfo' : services.updateWalletInfo,
-  'getWalletBalance' : services.getWalletBalance
 };
 
 module.exports.ws_server = {

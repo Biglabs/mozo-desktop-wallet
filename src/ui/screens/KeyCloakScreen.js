@@ -43,7 +43,8 @@ export default class KeyCloakScreen extends React.Component {
     });
     keycloak.login({
       redirectUri : "http://127.0.0.1:33013/oauth2-getcode",
-      scope: "offline_access"
+      scope: "offline_access",
+      kcLocale: "ko"
     });
   }
 

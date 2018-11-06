@@ -10,7 +10,7 @@ const CONSTANTS = require("../constants").CONSTANTS;
 
 const oauth2 = require('./oauth2');
 const logger = require('./logger');
-const {setRequestData} = require('./common');
+const common = require('./common');
 const address_book = require('./addressbook');
 const websocket_client = require('../websocket/websocket_client');
 
@@ -69,7 +69,7 @@ function extractWalletData(walletInfo) {
 
 function getOffchainTokenInfo() {
   const log = logger.getLogger("getOffchainTokenInfo");
-  let options = setRequestData();
+  let options = common.setRequestData();
   if (!options) {
     return;
   }
@@ -97,7 +97,7 @@ function getOffchainTokenInfo() {
 
 function getExchangeRateInfo() {
   const log = logger.getLogger("getExchangeRateInfo");
-  let options = setRequestData();
+  let options = common.setRequestData();
   if (!options) {
     return;
   }
@@ -153,7 +153,7 @@ function updateWalletBalance() {
     return;
   }
 
-  let options = setRequestData();
+  let options = common.setRequestData();
   if (!options) {
     return;
   }
@@ -184,7 +184,7 @@ let update_wallet_balance_interval = null;
 function getUserProfile() {
   const log = logger.getLogger("getUserProfile");
   return new Promise(function(resolve, reject) {
-    let options = setRequestData();
+    let options = common.setRequestData();
     if (!options) {
       return;
     }
@@ -313,7 +313,7 @@ function updateWalletInfo() {
           return;
         }
 
-        let options = setRequestData();
+        let options = common.setRequestData();
         options.url = mozo_service_host + "/api/user-profile/wallet";
         options.method = "PUT";
         options.json = true;
@@ -358,7 +358,7 @@ function createTransaction(tx_info) {
 
   tx_info.to = tx_info.to.trim();
 
-  let balance_info = getWalletBalance("SOLO");
+  let balance_info = common.getWalletBalance("SOLO");
   if (!balance_info) {
     return new Promise((resolve, reject) => {
       reject(ERRORS.NO_WALLET);
@@ -382,7 +382,7 @@ function createTransaction(tx_info) {
     outputs: null
   };
 
-  let options = setRequestData();
+  let options = common.setRequestData();
   options.url = mozo_service_host + "/api/solo/contract/solo-token/transfer";
   options.method = "POST";
   options.json = true;
@@ -459,7 +459,7 @@ function confirmTransaction(tx_server_req, res_callback) {
 function sendSignRequestToServer(signed_req) {
   const log = logger.getLogger("sendSignRequestToServer");
   return new Promise((resolve, reject) => {
-    let options = setRequestData();
+    let options = common.setRequestData();
     options.url = mozo_service_host + "/api/solo/contract/solo-token/send-signed-tx";
     options.method = "POST";
     options.json = true;
@@ -529,32 +529,6 @@ function sendSignRequest(signed_req) {
   }
 }
 
-function getWalletBalance(network_data) {
-  if (!network_data) {
-    return null;
-  }
-
-  let network = network_data.toUpperCase();
-  let balance_info = userReference.get("Wallet_Balance_" + network);
-  if (!balance_info) {
-    return balance_info;
-  }
-  if (balance_info.decimals && balance_info.decimals > 0) {
-    balance_info.balance /= Math.pow(10, balance_info.decimals);
-  }
-  let exchange_rates = R.map(x => {
-    let exchange_rate_data = userReference.get(network + "_" + x);
-    if (exchange_rate_data) {
-      return {
-        currency : exchange_rate_data.currency,
-        value: balance_info.balance * exchange_rate_data.rate
-      };
-    }
-  }, CONSTANTS.CURRENCY_EXCHANGE_RATE);
-  balance_info.exchange_rates = exchange_rates;
-  return balance_info;
-};
-
 function getTransactionHistory(network, page_num, size_num) {
   const log = logger.getLogger("getTransactionHistory");
   return new Promise(function(resolve, reject) {
@@ -580,7 +554,7 @@ function getTransactionHistory(network, page_num, size_num) {
       return;
     }
 
-    let options = setRequestData();
+    let options = common.setRequestData();
     if (!options) {
       resolve(null);
       return;
@@ -649,7 +623,7 @@ function getTxHashStatus(txhash) {
       return;
     }
 
-    let options = setRequestData();
+    let options = common.setRequestData();
     options.url = mozo_service_host + "/api/eth/solo/txs/" + txhash + "/status";
 
     log.debug(options);
@@ -678,7 +652,6 @@ module.exports = {
   'getTxHashStatus' : getTxHashStatus,
   'getTransactionHistory' : getTransactionHistory,
   'getUserProfile' : getUserProfile,
-  'getWalletBalance' : getWalletBalance,
   'sendSignRequest' : sendSignRequest,
   'sendSignRequestToServer' : sendSignRequestToServer,
   'logOut' : logOut,

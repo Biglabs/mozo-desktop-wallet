@@ -8,6 +8,7 @@
 const R = require('ramda');
 
 const main = require('../main');
+const common = require('../utils/common');
 // var grpcLoader = require("../grpcserver/GrpcLoader");
 const app_config = require("../app_settings").APP_SETTINGS;
 const CONSTANTS = require("../constants").CONSTANTS;
@@ -36,6 +37,7 @@ const userReference = require('electron-settings');
 const oauth2 = require('../utils/oauth2');
 const services = require('../utils/services');
 var address_book = require('../utils/addressbook');
+const store = require('../utils/store');
 
 let httpServer = null;
 
@@ -171,7 +173,7 @@ app.get('/getWalletBalance', (req, res, next) => {
     res.send({ result : response_data });
     return;
   }
-  let balance_info = services.getWalletBalance(addr_network);
+  let balance_info = common.getWalletBalance(addr_network);
   if (balance_info) {
     response_data = {
       status: "SUCCESS",
@@ -322,6 +324,93 @@ app.get('/transaction/txstatus', (req, res, next) => {
     res.send({ result : response_data });
   });
 });
+
+app.get('/store/beacon', (req, res, next) => {
+  store.beacon.get().then(function(data) {
+    response_data = {
+      status: "SUCCESS",
+      data: data,
+      error: null
+    };
+    res.send({ result : response_data });
+  }, function(err) {
+    response_data.error = INTERNAL_ERROR;
+    res.send({ result : response_data });
+  });
+});
+
+app.route('/store/air-drop')
+  .post((req, res, next) => {
+    let event_data = req.body;
+    event_data.operationalSmartContractAddress = "0x74b7f40696ad9c0328127e9b9d95e2e63eb0289b";
+    
+    /*
+    {
+      "airdropFreq": 120,
+      "appliedDateOfWeek": [
+        0
+      ],
+      "beaconInfoId": 0,
+      "hourOfDayFrom": 0,
+      "hourOfDayTo": 0,
+      "isActive": true,
+      "mozoAirdropPerCustomerVisit": 0,
+      "operationalSmartContractAddress": "string",
+      "periodFromDate": 0,
+      "periodToDate": 0,
+      "smartAddress": "string",
+      "stayIn": 0,
+      "totalNumMozoOffchain": 100
+    } */
+    let response_data = {
+      status: "ERROR",
+      error: ERRORS.INTERNAL_ERROR
+    };
+    store.createAirDropEvent(event_data).then(function(info) {
+      store.confirmTransaction(info, res);
+    }, function(err) {
+      res.send({
+        result: "ERROR",
+        error: response_data
+
+      });
+    });
+
+  });
+  // .get((req, res, next) => {
+  //   let response_data = {
+  //     status : "SUCCESS",
+  //     data : address_book.get(),
+  //     error : null
+  //   };
+  //   res.send({ result : response_data});
+  // });
+
+app.get('/store/check_airdrop_status', (req, res, next) => {
+  let txhash = req.query.txhash;
+  let response_data = {
+    status: "ERROR",
+    error: ERRORS.INVALID_REQUEST
+  };
+
+  if (!txhash) {
+    res.send({result : response_data});
+    return;
+  }
+
+  store.checkSmartContractHash(txhash).then(function(data) {
+    response_data = {
+      status: "SUCCESS",
+      data: data,
+      error: null
+    };
+    res.send({ result : response_data });
+  }, function(err) {
+    response_data.error = INTERNAL_ERROR;
+    res.send({ result : response_data });
+  });
+});
+
 
 function start_server() {
   /**

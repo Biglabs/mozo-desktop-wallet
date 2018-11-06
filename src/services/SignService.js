@@ -176,3 +176,66 @@ module.exports.signTransaction = function(txData, pin, callback){
         }
     }
 }
+
+/**
+ * Sign multiple transaction with format inputs, outputs, toSign, publicKeys and signatures.
+ * @param {Array} txData
+ * @param {String} pin
+ * @param {function} callback
+ */
+module.exports.signMultipleTransactions = function(txInputData, pin, callback){
+    if (!pin) {
+        if (typeof callback === 'function') {
+            callback(new Error("Can not use the PIN."), null);
+        }
+        return;
+    }
+
+    let result_data = [];
+    
+
+    for (let index = 0; index < txInputData.params.length; ++index) {
+        let txData = txInputData.params[index];
+        var inputs = txData.tx.inputs;
+        console.log(inputs);
+        var privKeys = getAllPrivateKeys(pin, inputs, txData.coinType);
+        if (!privKeys || privKeys.length == 0) {
+            if (typeof callback === 'function') {
+                callback(Constant.ERROR_TYPE.INVALID_ADDRESS, null);
+            }
+            return;
+        }
+
+        try {
+            var validateTx = txData;
+            var network = txInputData.network;
+            const net = (network == Constant.COIN_TYPE.BTC.network ? Bitcoin.networks.bitcoin : Bitcoin.networks.testnet);
+            // signing each of the hex-encoded string required to finalize the transaction
+            validateTx.pubkeys = [];
+            validateTx.signatures = [];
+            validateTx.tosign.map(function (tosign, index) {
+                var privateKey = privKeys[index];
+                var sign = signTxMessage(tosign, privateKey, net);
+                console.log('Sign: ' + sign);
+                validateTx.pubkeys.push(sign.publicKey);
+                validateTx.signatures.push(sign.signature);
+            });
+            if (validateTx.signatures.length != validateTx.tosign.length) {
+                if (typeof callback === 'function') {
+                    callback(Constant.ERROR_TYPE.INVALID_ADDRESS, null);
+                }
+                return;
+            }
+            result_data.push(JSON.stringify(validateTx));
+            
+        } catch (error) {
+            if (typeof callback === 'function') {
+                callback(error, null);
+            }
+        }
+    }
+
+    if (typeof callback === 'function') {
+        callback(null, result_data);
+    }
+}

@@ -42,32 +42,62 @@ export default class ConfirmationScreen extends React.Component {
 
         this._fromAPI = props.fromAPI ? true : false;
 
-        if (props.txData && props.txData.params && props.txData.params.tx) {
-            props.txData.params.tx.outputs.map(out => {
-                out.addresses.map(address => this.toAddress.push(address));
-            });
+        console.log(props.txData);
+        if (props.txData) {
+            if (props.txData.action == "SIGN" && props.txData.params && props.txData.params.tx) {
+                props.txData.params.tx.outputs.map(out => {
+                    out.addresses.map(address => this.toAddress.push(address));
+                });
 
-            props.txData.params.tx.inputs.map(inp => {
-                inp.addresses.map(address => this.fromAddress.push(address));
-            });
+                props.txData.params.tx.inputs.map(inp => {
+                    inp.addresses.map(address => this.fromAddress.push(address));
+                });
 
-            props.txData.params.tx.outputs.map(item => {
-                // Do not add return money
-                // BlockCypher will set the change address to the first transaction input/address listed in the transaction.
-                // To redirect this default behavior, you can set an optional change_address field within the TX request object.
-                if (item.addresses[0] != this.fromAddress[0]) {
-                    this.value += item.value;
+                props.txData.params.tx.outputs.map(item => {
+                    // Do not add return money
+                    // BlockCypher will set the change address to the first transaction input/address listed in the transaction.
+                    // To redirect this default behavior, you can set an optional change_address field within the TX request object.
+                    if (item.addresses[0] != this.fromAddress[0]) {
+                        this.value += item.value;
+                    }
+                });
+                if (this.value > 0) {
+                  if (props.txData.coinType == Constant.COIN_TYPE.SOLO.name) {
+                    this.value /= 100;
+                  } else {
+                    this.value /= (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
+                  }
                 }
-            });
-            if (this.value > 0) {
-              if (props.txData.coinType == Constant.COIN_TYPE.SOLO.name) {
-                this.value /= 100;
-              } else {
-                this.value /= (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
-              }
-            }
 
-            this.fees = props.txData.params.tx.fees / (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
+                this.fees = props.txData.params.tx.fees / (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
+            } else if (props.txData.action == "SIGN_AIRDROP_SMARTCONTRACT") {
+                let tx_data_info = props.txData.params[1];
+                tx_data_info.tx.outputs.map(out => {
+                    out.addresses.map(address => this.toAddress.push(address));
+                });
+
+                tx_data_info.tx.inputs.map(inp => {
+                    inp.addresses.map(address => this.fromAddress.push(address));
+                });
+
+                tx_data_info.tx.outputs.map(item => {
+                    // Do not add return money
+                    // BlockCypher will set the change address to the first transaction input/address listed in the transaction.
+                    // To redirect this default behavior, you can set an optional change_address field within the TX request object.
+                    if (item.addresses[0] != this.fromAddress[0]) {
+                        this.value += item.value;
+                    }
+                });
+
+                if (this.value > 0) {
+                    if (props.txData.coinType == Constant.COIN_TYPE.SOLO.name) {
+                      this.value /= 100;
+                    } else {
+                      this.value /= (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
+                    }
+                }
+                this.fees = tx_data_info.tx.fees / (props.txData.coinType == Constant.COIN_TYPE.BTC.name ? Constant.SATOSHI_UNIT : Constant.WEI_UNIT);
+            }
         } else {
             /* transaction param is empty, */
             // TODO: should be auto close this screen or alert error
@@ -82,6 +112,10 @@ export default class ConfirmationScreen extends React.Component {
         );
     }
 
+    callSignTransaction(signFunction, txData, pin) {
+        signFunction(txData, pin);
+    }
+
     onCompletePINfield(pin, index) {
         let mnemonicPhrase = WalletService.viewBackupPhrase(pin);
         console.log("mnemonic Phrase: " + mnemonicPhrase);
@@ -92,8 +126,12 @@ export default class ConfirmationScreen extends React.Component {
             return;
         }
         this.setState({isShowingLoading: true}, () => {
-            console.log(this.props.txData);
-            SignService.signTransaction(this.props.txData, pin, (error, result) => {
+            let sign_function = SignService.signTransaction;
+            let array_tx_data = this.props.txData.params.length;
+            if (array_tx_data && array_tx_data > 1) {
+                sign_function = SignService.signMultipleTransactions;
+            }
+            sign_function(this.props.txData, pin, (error, result) => {
                 if (result) {
                     if (this._fromAPI) {
                         Actions.reset('home', {pin: pin});
