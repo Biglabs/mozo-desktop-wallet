@@ -36,7 +36,7 @@ function getStoreInfo() {
         } else {
           log.error(response.statusCode);
           log.error(body);
-          let error_data = STORE_ERRORS.CANNOT_CREATE_AIR_DROP;
+          let error_data = STORE_ERRORS.INVALID_RETAILER;
           error_data.code = data.errorKey;
           error_data.title = data.title;
           error_data.detail = data.detail;
@@ -51,28 +51,7 @@ function getStoreInfo() {
 
 }
 
-function createAirDropEvent(airdrop_event) {
-  let wallet_balance = common.getWalletBalance("SOLO");
-  if (!wallet_balance) {
-    return new Promise(function(resolve, reject) {
-      reject(ERRORS.NO_WALLET);
-    });
-  }
-
-  let options = common.setRequestData();
-  if (!options) {
-    return new Promise(function(resolve, reject) {
-      reject(ERRORS.NO_WALLET);
-    });
-  }
-
-  airdrop_event.address = wallet_balance.address;
-
-  options.url = store_service_host + "/api/air-drops/prepare-event";
-  options.method = "POST";
-  options.json = true;
-  options.body = airdrop_event;
-
+function returnCreateAirDropEvent(options) {
   return new Promise(function(resolve, reject) {
     request(options, function(error, response, body) {
       if (!error) {
@@ -92,6 +71,47 @@ function createAirDropEvent(airdrop_event) {
       }
     });
   });
+}
+
+function createAirDropEvent(airdrop_event) {
+  let wallet_balance = common.getWalletBalance("SOLO");
+  if (!wallet_balance) {
+    return new Promise(function(resolve, reject) {
+      reject(ERRORS.NO_WALLET);
+    });
+  }
+
+  let options = common.setRequestData();
+  if (!options) {
+    return new Promise(function(resolve, reject) {
+      reject(ERRORS.NO_WALLET);
+    });
+  }
+
+  airdrop_event.active = true;
+  airdrop_event.address = wallet_balance.address;
+
+  options.url = store_service_host + "/api/air-drops/prepare-event";
+  options.method = "POST";
+  options.json = true;
+  options.body = airdrop_event;
+
+  if (!airdrop_event.beaconInfoId) {
+    beaconGetBeacon().then(function(info) {
+      if (info.length < 1) {
+        return new Promise(function(resolve, reject) {
+          reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
+        });
+      }
+      options.body.beaconInfoId = info[0].id;
+      return returnCreateAirDropEvent(options);
+
+    }, function(err) {
+      reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
+    });
+  } else {
+    return returnCreateAirDropEvent(options);
+  }
 }
 
 var signHttpCallback = null;
@@ -240,6 +260,62 @@ function checkSmartContractHash(smart_contract_hash) {
   });
 }
 
+function airdropGetAirdrops(request_data) {
+  let options = common.setRequestData();
+  if (!options) {
+    return new Promise((resolve, reject) => {
+      reject(ERRORS.NO_WALLET);
+    });
+  }
+
+  options.url = store_service_host + "/api/retailer/airdrops?";
+
+  let temp_data = null;
+  for (let request_key in request_data) {
+    temp_data = request_data[request_key];
+    if (typeof request_data[request_key] === 'string') {
+      options.url += request_key + '=';
+      options.url += request_data[request_key] + '&';
+    } else if (temp_data.length > 0 ){
+      for (let index = 0; index < temp_data.length; ++index) {
+        options.url += request_key + '=';
+        options.url += temp_data[index] + '&'
+      }
+    }
+  }
+
+  log.debug(options.url);
+
+  return new Promise((resolve, reject) => {
+    request(options, function(error, response, body) {
+      if (!error) {
+        let data = JSON.parse(body);
+        if (response.statusCode == 200) {
+          log.debug(body);
+          let info_data = {
+            'data' : data
+          };
+          let response_headers = response.headers;
+          info_data.headers = {
+            'total-page' : response_headers['total-page'],
+            'current-page' : response_headers['current-page'],
+            'elements-per-page' : response_headers['elements-per-page']
+          };
+          resolve(info_data);
+        } else {
+          log.error(response.statusCode);
+          log.error(body);
+          let error_data = STORE_ERRORS.INVALID_RETAILER;
+          reject(error_data);
+        }
+      } else {
+        log.error(error);
+        reject(ERRORS.INTERNAL_ERROR);
+      }
+    });
+  });
+}
+
 function beaconGetBeacon() {
   let options = common.setRequestData();
   if (!options) {
@@ -260,10 +336,7 @@ function beaconGetBeacon() {
         } else {
           log.error(response.statusCode);
           log.error(body);
-          let error_data = STORE_ERRORS.CANNOT_CREATE_AIR_DROP;
-          error_data.code = data.errorKey;
-          error_data.title = data.title;
-          error_data.detail = data.detail;
+          let error_data = STORE_ERRORS.INVALID_RETAILER;
           reject(error_data);
         }
       } else {
@@ -277,6 +350,9 @@ function beaconGetBeacon() {
 module.exports = {
   'beacon' : {
     'get' : beaconGetBeacon
+  },
+  'airdrop' : {
+    'get' : airdropGetAirdrops
   },
   'getStoreInfo' : getStoreInfo,
   'createAirDropEvent' : createAirDropEvent,

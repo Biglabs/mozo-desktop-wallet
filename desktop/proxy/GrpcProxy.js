@@ -8,6 +8,9 @@
 const R = require('ramda');
 
 const main = require('../main');
+const logger = require('../utils/logger');
+const log = logger.getLogger('http_proxy');
+
 const common = require('../utils/common');
 // var grpcLoader = require("../grpcserver/GrpcLoader");
 const app_config = require("../app_settings").APP_SETTINGS;
@@ -248,7 +251,7 @@ app.get('/getTxHistory', (req, res, next) => {
   let page_num = req.query.page ? req.query.page : 1;
   let size_num = req.query.size ? req.query.size : 15;
 
-  let balance_info = services.getTransactionHistory(
+  services.getTransactionHistory(
     addr_network, page_num, size_num).then(function(txhistory) {
     // console.log("TX history length: " + txhistory.length);
     if (txhistory) {
@@ -365,25 +368,25 @@ app.route('/store/air-drop')
   .post((req, res, next) => {
     let event_data = req.body;
     event_data.operationalSmartContractAddress = "0x74b7f40696ad9c0328127e9b9d95e2e63eb0289b";
+    event_data.stayIn = 0;
     
     /*
     {
-      "airdropFreq": 120,
+      "airdropFreq": 0,
       "appliedDateOfWeek": [
         0
       ],
       "beaconInfoId": 0,
       "hourOfDayFrom": 0,
       "hourOfDayTo": 0,
-      "isActive": true,
       "mozoAirdropPerCustomerVisit": 0,
-      "operationalSmartContractAddress": "string",
+      "name": "string",
       "periodFromDate": 0,
       "periodToDate": 0,
-      "smartAddress": "string",
       "stayIn": 0,
-      "totalNumMozoOffchain": 100
-    } */
+      "totalNumMozoOffchain": 0
+    }
+    */
     let response_data = {
       status: "ERROR",
       error: ERRORS.INTERNAL_ERROR
@@ -398,15 +401,33 @@ app.route('/store/air-drop')
       });
     });
 
+  })
+  .get((req, res, next) => {
+    let response_data = {
+      status : "ERROR",
+      data : null,
+      error : ERRORS.INTERNAL_ERROR
+    };
+
+    let request_data = req.query;
+    log.debug(request_data);
+
+    store.airdrop.get(request_data).then(function(info) {
+      response_data = {
+        status : "SUCCESS",
+        data : info.data,
+        error : null
+      };
+      let headers = info.headers;
+      for (let header_key in headers) {
+        res.header(header_key, headers[header_key]);
+      }
+      res.send({ result : response_data});
+    }, function(err) {
+      response_data.error = err
+      res.send({ result : response_data});
+    });
   });
-  // .get((req, res, next) => {
-  //   let response_data = {
-  //     status : "SUCCESS",
-  //     data : address_book.get(),
-  //     error : null
-  //   };
-  //   res.send({ result : response_data});
-  // });
 
 app.get('/store/check_airdrop_status', (req, res, next) => {
   let txhash = req.query.txhash;

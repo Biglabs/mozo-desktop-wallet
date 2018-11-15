@@ -67,8 +67,14 @@ const ERRORS = {
 };
 
 const STORE_ERRORS = {
-  CANNOT_CREATE_AIR_DROP: {
+  INVALID_RETAILER: {
     code: "ERR-STORE-001",
+    title: "Not a valid retailer",
+    detail: "The user is not a valid retailer",
+    type: "Business"
+  },
+  CANNOT_CREATE_AIR_DROP: {
+    code: "ERR-STORE-002",
     title: "Air drop creation failed",
     detail: "The air drop event was created failed.",
     type: "Business"
