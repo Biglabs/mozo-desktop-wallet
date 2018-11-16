@@ -293,7 +293,8 @@ function airdropGetAirdrops(request_data) {
           info_data.headers = {
             'total-page' : response_headers['total-page'],
             'current-page' : response_headers['current-page'],
-            'elements-per-page' : response_headers['elements-per-page']
+            'elements-per-page' : response_headers['elements-per-page'],
+            'X-Total-Count' : response_headers['X-Total-Count']
           };
           resolve(info_data);
         } else {
