@@ -294,7 +294,7 @@ function airdropGetAirdrops(request_data) {
             'total-page' : response_headers['total-page'],
             'current-page' : response_headers['current-page'],
             'elements-per-page' : response_headers['elements-per-page'],
-            'X-Total-Count' : response_headers['X-Total-Count']
+            'x-total-count' : response_headers['x-total-count']
           };
           resolve(info_data);
         } else {
