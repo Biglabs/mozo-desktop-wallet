@@ -51,67 +51,61 @@ function getStoreInfo() {
 
 }
 
-function returnCreateAirDropEvent(options) {
-  return new Promise(function(resolve, reject) {
-    request(options, function(error, response, body) {
-      if (!error) {
-        if (response.statusCode == 200) {
-          // Set the value being 0
-          body[1].tx.outputs[0].value = airdrop_event.totalNumMozoOffchain;
-          log.debug(body);
-          resolve(body)
-        } else {
-          log.error(response.statusCode);
-          log.error(body);
-          reject(body);
-        }
+function returnCreateAirDropEvent(options, resolve, reject) {
+  request(options, function(error, response, body) {
+    if (!error) {
+      if (response.statusCode == 200) {
+        // Set the value being 0
+        body[1].tx.outputs[0].value = options.body.totalNumMozoOffchain;
+        log.debug(body);
+        resolve(body)
       } else {
-        log.error(error);
-        reject(error);
+        log.error(response.statusCode);
+        log.error(body);
+        reject(body);
       }
-    });
+    } else {
+      log.error(error);
+      reject(error);
+    }
   });
 }
 
 function createAirDropEvent(airdrop_event) {
-  let wallet_balance = common.getWalletBalance("SOLO");
-  if (!wallet_balance) {
-    return new Promise(function(resolve, reject) {
-      reject(ERRORS.NO_WALLET);
-    });
-  }
+  return new Promise(function(resolve, reject) {
+    let wallet_balance = common.getWalletBalance("SOLO");
+    if (!wallet_balance) {
+        reject(ERRORS.NO_WALLET);
+    }
 
-  let options = common.setRequestData();
-  if (!options) {
-    return new Promise(function(resolve, reject) {
-      reject(ERRORS.NO_WALLET);
-    });
-  }
+    let options = common.setRequestData();
+    if (!options) {
+        reject(ERRORS.NO_WALLET);
+    }
 
-  airdrop_event.active = true;
-  airdrop_event.address = wallet_balance.address;
+    airdrop_event.active = true;
+    airdrop_event.address = wallet_balance.address;
 
-  options.url = store_service_host + "/api/air-drops/prepare-event";
-  options.method = "POST";
-  options.json = true;
-  options.body = airdrop_event;
+    options.url = store_service_host + "/api/air-drops/prepare-event";
+    options.method = "POST";
+    options.json = true;
+    options.body = airdrop_event;
 
-  if (!airdrop_event.beaconInfoId) {
-    beaconGetBeacon().then(function(info) {
-      if (info.length < 1) {
-        return new Promise(function(resolve, reject) {
+    if (!airdrop_event.beaconInfoId) {
+      beaconGetBeacon().then(function(info) {
+        if (info.length < 1) {
           reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
-        });
-      }
-      options.body.beaconInfoId = info[0].id;
-      return returnCreateAirDropEvent(options);
+        }
+        options.body.beaconInfoId = info[0].id;
+        returnCreateAirDropEvent(options, resolve, reject);
 
-    }, function(err) {
-      reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
-    });
-  } else {
-    return returnCreateAirDropEvent(options);
-  }
+      }, function(err) {
+        reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
+      });
+    } else {
+      returnCreateAirDropEvent(options, resolve, reject);
+    }
+  });
 }
 
 var signHttpCallback = null;
