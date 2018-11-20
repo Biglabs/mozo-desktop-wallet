@@ -102,9 +102,7 @@ function getExchangeRateInfo() {
     return;
   }
 
-  log.debug(options);
-
-  let network_name = "SOLO";
+  let network_name = "MOZOX";
 
   for (var index = 0; index < CONSTANTS.CURRENCY_EXCHANGE_RATE.length; ++index) {
     let exchange_rate_name = network_name + "_" +
@@ -112,6 +110,8 @@ function getExchangeRateInfo() {
     options.url = mozo_service_host +
       "/api/exchange/rate?currency=" + CONSTANTS.CURRENCY_EXCHANGE_RATE[index] +
       "&symbol=" + network_name;
+
+    log.debug(options);
 
     request(options, function(error, response, body) {
       if (!error) {

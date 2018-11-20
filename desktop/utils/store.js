@@ -55,9 +55,11 @@ function returnCreateAirDropEvent(options, resolve, reject) {
   request(options, function(error, response, body) {
     if (!error) {
       if (response.statusCode == 200) {
+        log.debug(JSON.stringify(body, null, 2));
         // Set the value being 0
-        body[1].tx.outputs[0].value = options.body.totalNumMozoOffchain;
-        log.debug(body);
+        if (body.length > 1) {
+          body[1].tx.outputs[0].value = options.body.totalNumMozoOffchain;
+        }
         resolve(body)
       } else {
         log.error(response.statusCode);
@@ -236,11 +238,7 @@ function checkSmartContractHash(smart_contract_hash) {
         let data = JSON.parse(body);
         if (response.statusCode == 200) {
           log.debug(body);
-          if (data.status == "SUCCESS") {
-            resolve(data);
-          } else {
-            reject(STORE_ERRORS.CANNOT_CREATE_AIR_DROP);
-          }
+          resolve(data);
         } else {
           log.error(response.statusCode);
           log.error(body);

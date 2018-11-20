@@ -367,7 +367,6 @@ app.get('/store/beacon', (req, res, next) => {
 app.route('/store/air-drop')
   .post((req, res, next) => {
     let event_data = req.body;
-    event_data.operationalSmartContractAddress = "0x74b7f40696ad9c0328127e9b9d95e2e63eb0289b";
     event_data.stayIn = 0;
     
     /*
