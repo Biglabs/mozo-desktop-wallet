@@ -18,19 +18,19 @@ const APP_SETTINGS = {
 
   mozo_services: {
     api: {
-      host: "https://dev.gateway.mozocoin.io/solomon"
+      host: "https://staging.gateway.mozocoin.io/solomon"
     },
     store_api: {
-      host: "https://dev.gateway.mozocoin.io/store"
+      host: "https://staging.gateway.mozocoin.io/store"
     },
     notification: {
-      host: "ws://18.136.38.11:8089/websocket"
+      host: "ws://52.76.238.125:8089/websocket"
     },
     oauth2: {
-      host: "https://dev.keycloak.mozocoin.io",
+      host: "https://staging.keycloak.mozocoin.io",
       client: {
         id: "desktop_app",
-        secret: "4546b9b1-5fcc-48b6-9922-a8ad9789fb71"
+        secret: "559a752a-d9b6-4b2c-8dcb-93b5b3ed1c79"
       }
     }
   }
