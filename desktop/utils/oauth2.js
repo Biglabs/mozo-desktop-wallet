@@ -26,6 +26,8 @@ const oauth_credentials = {
 const oauth2 = require('simple-oauth2').create(oauth_credentials);
 const userReference = require('electron-settings');
 
+userReference.set("MOZO_APP_CONFIG", app_config);
+
 let access_token = null;
 
 if (userReference.get(constants.OAUTH2TOKEN_KEY)) {
@@ -48,6 +50,7 @@ function isTokenValid() {
   }, function(err) {
     log.error('Error refreshing access token: ', error.message);
     userReference.deleteAll();
+    userReference.set("MOZO_APP_CONFIG", app_config);
     main.mainWindow.loadURL(`file://${__dirname}/../index.html`);
     return false;
   });

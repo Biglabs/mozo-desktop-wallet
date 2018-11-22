@@ -9,8 +9,6 @@ const CONSTANTS = include.constants.CONSTANTS;
 const app_config = include.app_config;
 const mozo_service_host = app_config.mozo_services.api.host;
 
-userReference.set("MOZO_APP_CONFIG", app_config);
-
 function setRequestData() {
   let token_header = oauth2.tokenHeader();
   if (!token_header) {
@@ -50,11 +48,6 @@ function getWalletBalance(network_data) {
   }, CONSTANTS.CURRENCY_EXCHANGE_RATE);
   balance_info.exchange_rates = exchange_rates;
   return balance_info;
-};
-
-var Common = {
-  'setRequestData' : setRequestData,
-  'getWalletBalance' : getWalletBalance
 };
 
 exports.setRequestData = setRequestData;

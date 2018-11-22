@@ -14,18 +14,7 @@ const userReference = require('electron-settings');
 export default class KeyCloakScreen extends React.Component {
   constructor(props) {
     super(props);
-    let keycloak_url = "https://staging.keycloak.mozocoin.io";
-    let oauth2_client_id = "desktop_app";
-    let mozo_app_config = userReference.get("MOZO_APP_CONFIG");
-    if (mozo_app_config) {
-      keycloak_url = mozo_app_config.mozo_services.oauth2.host;
-      oauth2_client_id = mozo_app_config.mozo_services.oauth2.client.id;
-    }
-    keycloak_url += "/auth";
-
     this.state = {
-      keycloak_url: keycloak_url,
-      oauth2_client_id: oauth2_client_id,
       keycloak: null,
       authenticated: null,
       token: null
@@ -37,10 +26,20 @@ export default class KeyCloakScreen extends React.Component {
   }
 
   componentDidMount() {
+    let keycloak_url = "https://staging.keycloak.mozocoin.io";
+    let oauth2_client_id = "desktop_app";
+    let mozo_app_config = userReference.get("MOZO_APP_CONFIG");
+    if (mozo_app_config) {
+      keycloak_url = mozo_app_config.mozo_services.oauth2.host;
+      oauth2_client_id = mozo_app_config.mozo_services.oauth2.client.id;
+    }
+    keycloak_url += "/auth";
+    console.log(keycloak_url);
+
     const keycloak = Keycloak({
-      url : this.state.keycloak_url,
+      url : keycloak_url,
       realm: "mozo",
-      clientId: this.state.oauth2_client_id
+      clientId: oauth2_client_id
     });
     keycloak.init({
       onLoad: "check-sso",
@@ -56,7 +55,7 @@ export default class KeyCloakScreen extends React.Component {
     keycloak.login({
       redirectUri : "http://127.0.0.1:33013/oauth2-getcode",
       scope: "offline_access",
-      kcLocale: "ko"
+      kcLocale: "en"
     });
   }
 

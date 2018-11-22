@@ -243,6 +243,7 @@ function handleNotification(json_data) {
 
 function logOut() {
   userReference.deleteAll();
+  userReference.set("MOZO_APP_CONFIG", app_config);
   if (exchange_rate_interval) {
     clearInterval(exchange_rate_interval);
     exchange_rate_interval = null;
