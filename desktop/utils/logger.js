@@ -29,7 +29,5 @@ function shutdown(cb) {
   log4js.shutdown(cb);
 }
 
-module.exports = {
-  'getLogger' : getLogger,
-  'shutdown' : shutdown
-};
+exports.getLogger = getLogger;
+exports.shutdown = shutdown;

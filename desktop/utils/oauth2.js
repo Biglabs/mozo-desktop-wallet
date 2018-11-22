@@ -1,9 +1,11 @@
 
 const main = require('../main');
+const include = require('../include');
 const logger = require('./logger');
+
 const log = logger.getLogger("oauth2");
-const app_config = require("../app_settings").APP_SETTINGS;
-const constants = require("../constants").CONSTANTS;
+const app_config = include.app_config;
+const constants = include.constants.CONSTANTS;
 
 const oauth_credentials = {
   client: {

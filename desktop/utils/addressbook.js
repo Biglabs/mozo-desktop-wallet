@@ -4,13 +4,14 @@ var request = require('request');
 const R = require('ramda');
 
 const main = require('../main');
+const include = require('../include');
 const logger = require('./logger');
 const log = logger.getLogger("address-book");
 const oauth2 = require('./oauth2');
 const common = require('./common');
 const CONSTANTS = require("../constants").CONSTANTS;
 
-const app_config = require("../app_settings").APP_SETTINGS;
+const app_config = include.app_config;
 const mozo_service_host = app_config.mozo_services.api.host;
 
 
@@ -159,14 +160,9 @@ function deleteAddressBook(id) {
   });
 }
 
-var AddressBook = {
-
-  'download' : downloadAddressBook,
-  'get' : getAddressBook,
-  'find' : findFromAddressBook,
-  'add' : addAddressBook,
-  'update' : updateAddressBook,
-  'delete' : deleteAddressBook
-};
-
-module.exports = AddressBook;
+exports.download = downloadAddressBook;
+exports.get = getAddressBook;
+exports.find = findFromAddressBook;
+exports.add = addAddressBook;
+exports.update = updateAddressBook;
+exports.delete = deleteAddressBook;

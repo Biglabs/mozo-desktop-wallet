@@ -28,6 +28,7 @@ websocket_server.start()
 
 const websocket_client = require('./websocket/websocket_client');
 
+const include = require("./include");
 const common = require('./utils/common');
 const services = require('./utils/services');
 const store = require('./utils/store');
@@ -35,7 +36,7 @@ const store = require('./utils/store');
 const address_book = require('./utils/addressbook');
 
 const { app, BrowserWindow, protocol } = require('electron');
-const app_config = require("./app_settings").APP_SETTINGS;
+const app_config = include.app_settings.APP_SETTINGS;
 const PROTOCOL_PREFIX = app_config.app.deeplink;
 
 

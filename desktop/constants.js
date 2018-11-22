@@ -81,8 +81,6 @@ const STORE_ERRORS = {
   }
 };
 
-module.exports = {
-  'CONSTANTS' : CONSTANTS,
-  'ERRORS' : ERRORS,
-  'STORE_ERRORS' : STORE_ERRORS
-}
+exports.CONSTANTS = CONSTANTS;
+exports.ERRORS = ERRORS;
+exports.STORE_ERRORS = STORE_ERRORS;

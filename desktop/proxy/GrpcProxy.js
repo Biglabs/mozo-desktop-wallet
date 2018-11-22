@@ -11,11 +11,12 @@ const main = require('../main');
 const logger = require('../utils/logger');
 const log = logger.getLogger('http_proxy');
 
+const include = require('../include');
 const common = require('../utils/common');
 // var grpcLoader = require("../grpcserver/GrpcLoader");
-const app_config = require("../app_settings").APP_SETTINGS;
-const CONSTANTS = require("../constants").CONSTANTS;
-const ERRORS = require("../constants").ERRORS;
+const app_config = include.app_config;
+const CONSTANTS = include.constants.CONSTANTS;
+const ERRORS = include.constants.ERRORS;
 
 /**
  * create stub for client

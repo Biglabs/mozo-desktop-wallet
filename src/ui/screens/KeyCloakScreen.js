@@ -9,11 +9,23 @@ import { strings } from '../../helpers/i18nUtils';
 
 import Globals from '../../services/GlobalService';
 
+const userReference = require('electron-settings');
 
 export default class KeyCloakScreen extends React.Component {
   constructor(props) {
     super(props);
+    let keycloak_url = "https://staging.keycloak.mozocoin.io";
+    let oauth2_client_id = "desktop_app";
+    let mozo_app_config = userReference.get("MOZO_APP_CONFIG");
+    if (mozo_app_config) {
+      keycloak_url = mozo_app_config.mozo_services.oauth2.host;
+      oauth2_client_id = mozo_app_config.mozo_services.oauth2.client.id;
+    }
+    keycloak_url += "/auth";
+
     this.state = {
+      keycloak_url: keycloak_url,
+      oauth2_client_id: oauth2_client_id,
       keycloak: null,
       authenticated: null,
       token: null
@@ -26,9 +38,9 @@ export default class KeyCloakScreen extends React.Component {
 
   componentDidMount() {
     const keycloak = Keycloak({
-      url : "https://dev.keycloak.mozocoin.io/auth",
+      url : this.state.keycloak_url,
       realm: "mozo",
-      clientId: "desktop_app"
+      clientId: this.state.oauth2_client_id
     });
     keycloak.init({
       onLoad: "check-sso",

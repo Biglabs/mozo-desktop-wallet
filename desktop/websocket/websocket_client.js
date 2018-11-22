@@ -92,11 +92,8 @@ function sendMsg(json_data) {
 };
 
 
-
-module.exports = {
-  'connect' : connect,
-  'disconnect' : disconnect,
-  'sendMsg' : sendMsg,
-  'addListener' : addListener,
-  'removeListener' : removeListener
-};
+exports.connect = connect;
+exports.disconnect = disconnect;
+exports.sendMsg = sendMsg;
+exports.addListener = addListener;
+exports.removeListener = removeListener;

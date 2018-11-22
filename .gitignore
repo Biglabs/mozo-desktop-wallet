@@ -96,3 +96,4 @@ dist
 .idea/inspectionProfiles/
 desktop/dist/
 main.webpack.js
+.app_settings.js

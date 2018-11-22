@@ -3,9 +3,10 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 const R = require('ramda');
 
-const app_config = require("../app_settings").APP_SETTINGS;
-const CONSTANTS = require("../constants").CONSTANTS;
-const ERRORS = require("../constants").ERRORS;
+const include = require("../include");
+const app_config = include.app_config;
+const CONSTANTS = include.constants.CONSTANTS;
+const ERRORS = include.constants.ERRORS;
 
 const logger = require('../utils/logger');
 const log = logger.getLogger("websocket-server");
@@ -62,7 +63,7 @@ let startServer = module.exports.start = function() {
   });
 }
 
-module.exports.sendMsgClient = function(message) {
+exports.sendMsgClient = function(message) {
   R.map(x => {
     x.sendUTF(JSON.stringify(message));
   }, clients);

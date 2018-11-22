@@ -5,16 +5,16 @@ let request = require('request');
 const crypto = require("crypto");
 
 const main = require('../main');
-const ERRORS = require("../constants").ERRORS;
-const CONSTANTS = require("../constants").CONSTANTS;
 
-const oauth2 = require('./oauth2');
+const include = require("../include");
 const logger = require('./logger');
 const common = require('./common');
 const address_book = require('./addressbook');
 const websocket_client = require('../websocket/websocket_client');
 
-const app_config = require("../app_settings").APP_SETTINGS;
+const app_config = include.app_config;
+const ERRORS = include.constants.ERRORS;
+const CONSTANTS = include.constants.CONSTANTS;
 const mozo_service_host = app_config.mozo_services.api.host;
 
 
@@ -646,14 +646,12 @@ function getTxHashStatus(txhash) {
   });
 };
 
-module.exports = {
-  'createTransaction' : createTransaction,
-  'confirmTransaction' : confirmTransaction,
-  'getTxHashStatus' : getTxHashStatus,
-  'getTransactionHistory' : getTransactionHistory,
-  'getUserProfile' : getUserProfile,
-  'sendSignRequest' : sendSignRequest,
-  'sendSignRequestToServer' : sendSignRequestToServer,
-  'logOut' : logOut,
-  'updateWalletInfo' : updateWalletInfo
-};
+exports.createTransaction = createTransaction;
+exports.confirmTransaction = confirmTransaction;
+exports.getTxHashStatus = getTxHashStatus;
+exports.getTransactionHistory = getTransactionHistory;
+exports.getUserProfile = getUserProfile;
+exports.sendSignRequest = sendSignRequest;
+exports.sendSignRequestToServer = sendSignRequestToServer;
+exports.logOut = logOut;
+exports.updateWalletInfo = updateWalletInfo;

@@ -2,18 +2,17 @@ const userReference = require('electron-settings');
 const R = require('ramda');
 let request = require('request');
 
-const ERRORS = require("../constants").ERRORS;
-const STORE_ERRORS = require("../constants").STORE_ERRORS;
-const CONSTANTS = require("../constants").CONSTANTS;
 const main = require("../main");
-
+const include = require('../include');
 const logger = require('./logger');
 const log = logger.getLogger("store");
-
 const common = require('./common');
 
-const app_config = require("../app_settings").APP_SETTINGS;
+const app_config = include.app_config;
 const store_service_host = app_config.mozo_services.store_api.host;
+const ERRORS = include.constants.ERRORS;
+const STORE_ERRORS = include.constants.STORE_ERRORS;
+const CONSTANTS = include.constants.CONSTANTS;
 
 
 function getStoreInfo() {
@@ -342,16 +341,16 @@ function beaconGetBeacon() {
   });
 }
 
-module.exports = {
-  'beacon' : {
-    'get' : beaconGetBeacon
-  },
-  'airdrop' : {
-    'get' : airdropGetAirdrops
-  },
-  'getStoreInfo' : getStoreInfo,
-  'createAirDropEvent' : createAirDropEvent,
-  'confirmTransaction' : confirmTransaction,
-  'sendSignRequest' : sendSignRequest,
-  'checkSmartContractHash' : checkSmartContractHash
+exports.beacon = {
+  'get' : beaconGetBeacon
 };
+
+exports.airdrop = {
+  'get' : airdropGetAirdrops
+}
+
+exports.getStoreInfo = getStoreInfo;
+exports.createAirDropEvent = createAirDropEvent;
+exports.confirmTransaction = confirmTransaction;
+exports.sendSignRequest = sendSignRequest;
+exports.checkSmartContractHash = checkSmartContractHash;

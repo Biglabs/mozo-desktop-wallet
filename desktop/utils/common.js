@@ -2,10 +2,14 @@
 const R = require('ramda');
 const userReference = require('electron-settings');
 
+const include = require("../include");
 const oauth2 = require('./oauth2');
-const CONSTANTS = require("../constants").CONSTANTS;
-const app_config = require("../app_settings").APP_SETTINGS;
+
+const CONSTANTS = include.constants.CONSTANTS;
+const app_config = include.app_config;
 const mozo_service_host = app_config.mozo_services.api.host;
+
+userReference.set("MOZO_APP_CONFIG", app_config);
 
 function setRequestData() {
   let token_header = oauth2.tokenHeader();
@@ -53,4 +57,5 @@ var Common = {
   'getWalletBalance' : getWalletBalance
 };
 
-module.exports = Common;
+exports.setRequestData = setRequestData;
+exports.getWalletBalance = getWalletBalance;
