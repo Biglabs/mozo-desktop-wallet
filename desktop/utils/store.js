@@ -23,7 +23,7 @@ function getStoreInfo() {
     });
   }
 
-  options.url = store_service_host + "/api/retailer/info";
+  options.url = store_service_host + "/retailer/info";
 
   return new Promise((resolve, reject) => {
     request(options, function(error, response, body) {
@@ -89,7 +89,7 @@ function createAirDropEvent(airdrop_event) {
     airdrop_event.mozoAirdropPerCustomerVisit *= Math.pow(10, wallet_balance.decimals);
     airdrop_event.totalNumMozoOffchain *= Math.pow(10, wallet_balance.decimals);
 
-    options.url = store_service_host + "/api/air-drops/prepare-event";
+    options.url = store_service_host + "/air-drops/prepare-event";
     options.method = "POST";
     options.json = true;
     options.body = airdrop_event;
@@ -148,7 +148,7 @@ function sendSignRequestToServer(signed_req) {
     });
   }
 
-  options.url = store_service_host + "/api/air-drops/sign";
+  options.url = store_service_host + "/air-drops/sign";
   options.method = "POST";
   options.json = true;
   options.body = signed_req;
@@ -231,7 +231,7 @@ function checkSmartContractHash(smart_contract_hash) {
   }
 
   options.url = store_service_host +
-      "/api/air-drops/check/" + smart_contract_hash;
+      "/air-drops/check/" + smart_contract_hash;
 
   return new Promise((resolve, reject) => {
     request(options, function(error, response, body) {
@@ -261,7 +261,7 @@ function airdropGetAirdrops(request_data) {
     });
   }
 
-  options.url = store_service_host + "/api/retailer/airdrops?";
+  options.url = store_service_host + "/retailer/airdrops?";
 
   let temp_data = null;
   for (let request_key in request_data) {
@@ -318,7 +318,7 @@ function beaconGetBeacon() {
     });
   }
 
-  options.url = store_service_host + "/api/retailer/beacon";
+  options.url = store_service_host + "/retailer/beacon";
 
   return new Promise((resolve, reject) => {
     request(options, function(error, response, body) {

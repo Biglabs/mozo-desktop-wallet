@@ -18,10 +18,10 @@ const APP_SETTINGS = {
 
   mozo_services: {
     api: {
-      host: "https://dev.gateway.mozocoin.io/solomon"
+      host: "https://dev.gateway.mozocoin.io/solomon/api/app"
     },
     store_api: {
-      host: "https://dev.gateway.mozocoin.io/store"
+      host: "https://dev.gateway.mozocoin.io/store/api/app"
     },
     notification: {
       host: "ws://18.136.38.11:8089/websocket"

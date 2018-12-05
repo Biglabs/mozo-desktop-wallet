@@ -15,7 +15,7 @@ function setRequestData() {
     return null;
   }
   let options = {
-    url: mozo_service_host + "/api/user-profile",
+    url: mozo_service_host + "/user-profile",
     headers: {
       'Authorization' : token_header
     },

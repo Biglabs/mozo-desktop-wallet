@@ -97,3 +97,4 @@ dist
 desktop/dist/
 main.webpack.js
 .app_settings.js
+.vscode/

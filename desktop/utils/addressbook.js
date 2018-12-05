@@ -21,7 +21,7 @@ function downloadAddressBook(callback) {
     return;
   }
 
-  options.url = mozo_service_host + "/api/contacts";
+  options.url = mozo_service_host + "/contacts";
 
   request(options, function(error, response, body) {
     if (!error) {
@@ -70,7 +70,7 @@ function addAddressBook(data) {
     return;
   }
 
-  options.url = mozo_service_host + "/api/contacts";
+  options.url = mozo_service_host + "/contacts";
   options.method = "POST";
   options.json = true;
   options.body = {
@@ -103,7 +103,7 @@ function updateAddressBook(data) {
     return;
   }
 
-  options.url = mozo_service_host + "/api/contacts" + data.id;
+  options.url = mozo_service_host + "/contacts" + data.id;
   options.method = "PUT";
   options.json = true;
   options.body = {
@@ -137,7 +137,7 @@ function deleteAddressBook(id) {
     return;
   }
 
-  options.url = mozo_service_host + "/api/contacts" + data.id;
+  options.url = mozo_service_host + "/contacts" + data.id;
   options.method = "DELETE";
 
   return new Promise(function(resolve, reject) {

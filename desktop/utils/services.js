@@ -75,7 +75,7 @@ function getOffchainTokenInfo() {
   }
 
   options.url = mozo_service_host +
-    "/api/solo/contract/solo-token";
+    "/solo/contract/solo-token";
 
   log.debug(options);
 
@@ -108,7 +108,7 @@ function getExchangeRateInfo() {
     let exchange_rate_name = network_name + "_" +
         CONSTANTS.CURRENCY_EXCHANGE_RATE[index];
     options.url = mozo_service_host +
-      "/api/exchange/rate?currency=" + CONSTANTS.CURRENCY_EXCHANGE_RATE[index] +
+      "/exchange/rate?currency=" + CONSTANTS.CURRENCY_EXCHANGE_RATE[index] +
       "&symbol=" + network_name;
 
     log.debug(options);
@@ -159,7 +159,7 @@ function updateWalletBalance() {
   }
 
   options.url = mozo_service_host +
-    "/api/solo/contract/solo-token/balance/" + address;
+    "/solo/contract/solo-token/balance/" + address;
 
   log.debug(options);
 
@@ -315,7 +315,7 @@ function updateWalletInfo() {
         }
 
         let options = common.setRequestData();
-        options.url = mozo_service_host + "/api/user-profile/wallet";
+        options.url = mozo_service_host + "/user-profile/wallet";
         options.method = "PUT";
         options.json = true;
         options.body = {
@@ -384,7 +384,7 @@ function createTransaction(tx_info) {
   };
 
   let options = common.setRequestData();
-  options.url = mozo_service_host + "/api/solo/contract/solo-token/transfer";
+  options.url = mozo_service_host + "/solo/contract/solo-token/transfer";
   options.method = "POST";
   options.json = true;
   options.body = tx_req;
@@ -461,7 +461,7 @@ function sendSignRequestToServer(signed_req) {
   const log = logger.getLogger("sendSignRequestToServer");
   return new Promise((resolve, reject) => {
     let options = common.setRequestData();
-    options.url = mozo_service_host + "/api/solo/contract/solo-token/send-signed-tx";
+    options.url = mozo_service_host + "/solo/contract/solo-token/send-signed-tx";
     options.method = "POST";
     options.json = true;
     options.body = signed_req;
@@ -562,7 +562,7 @@ function getTransactionHistory(network, page_num, size_num) {
     }
 
     options.url = mozo_service_host +
-      "/api/solo/contract/solo-token/txhistory/" + address +
+      "/solo/contract/solo-token/txhistory/" + address +
       "?page=" + page_num + "&size=" + size_num;
 
     log.debug(options);
@@ -625,7 +625,7 @@ function getTxHashStatus(txhash) {
     }
 
     let options = common.setRequestData();
-    options.url = mozo_service_host + "/api/eth/solo/txs/" + txhash + "/status";
+    options.url = mozo_service_host + "/eth/solo/txs/" + txhash + "/status";
 
     log.debug(options);
 
