@@ -197,11 +197,11 @@ function sendSignRequest(signed_req) {
     return JSON.parse(x);
   }, signed_req.result.signedTransaction);
 
-  sendSignRequestToServer(sign_req_data_arr).then((tx_data) => {
+  sendSignRequestToServer(sign_req_data_arr).then((transaction_info) => {
     if (signHttpCallback) {
       response_data = {
         status: "SUCCESS",
-        data: tx_data
+        data: transaction_info.message
       };
       signHttpCallback.send({ result : response_data });
       signHttpCallback = null;
