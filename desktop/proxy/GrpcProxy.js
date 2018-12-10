@@ -462,8 +462,8 @@ function start_server() {
    * forward rest call to grpc and vice versal
    */
   httpServer = app.listen(port, public_host, async () => {
-    // console.log("Proxy is listening on host: " + public_host +
-                // " port: " + port + "!");
+    log.debug("Proxy is listening on host: " + public_host +
+      " port: " + port + "!");
   });
   httpServer.setTimeout(500000);
 }
