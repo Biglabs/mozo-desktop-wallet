@@ -88,6 +88,8 @@ function createAirDropEvent(airdrop_event) {
     airdrop_event.address = wallet_balance.address;
     airdrop_event.mozoAirdropPerCustomerVisit *= Math.pow(10, wallet_balance.decimals);
     airdrop_event.totalNumMozoOffchain *= Math.pow(10, wallet_balance.decimals);
+    airdrop_event.symbol = "SOLO";
+    airdrop_event.decimals = 2;
 
     options.url = store_service_host + "/air-drops/prepare-event";
     options.method = "POST";
