@@ -1,6 +1,6 @@
 {
   "name": "MozoWallet",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "postinstall": "npm rebuild --target=2.0.2 --runtime=electron --dist-url=https://atom.io/download/electron grpc"
