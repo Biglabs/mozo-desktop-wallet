@@ -49,7 +49,8 @@
         this.txtQuery = str;
       },
       clickedOnSearch: function() {
-        axios.get('https://dev.gateway.mozocoin.io/searchstoredemo/api/public/store/_search/store-infos?query='+ this.txtQuery)
+        // axios.get('https://dev.gateway.mozocoin.io/searchstoredemo/api/public/store/_search/store-infos?query='+ this.txtQuery)
+        axios.get('http://192.168.56.4:8193/api/public/store/_search/store-infos?query='+ this.txtQuery)
         .then(response => {
           console.log(process.VUE_APP_BASE_URI)
           this.stores = response.data
