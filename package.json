@@ -74,7 +74,7 @@
     "react-art": "^16.3.1",
     "react-autosuggest": "^9.4.2",
     "react-countdown-clock": "^2.4.0",
-    "react-dom": "16.3.1",
+    "react-dom": "16.11.0",
     "react-native": "^0.55.4",
     "react-native-bitcoinjs-lib": "^2.3.9",
     "react-native-camera": "^1.1.4",
