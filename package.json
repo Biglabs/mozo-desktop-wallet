@@ -134,7 +134,7 @@
     "babel-preset-react-native": "4.0.0",
     "babel-preset-stage-3": "^6.24.1",
     "cross-zip-cli": "^1.0.0",
-    "electron": "2.0.2",
+    "electron": "9.1.0",
     "electron-builder": "20.24.4",
     "eslint": "^5.2.0",
     "jest": "23.1.0",
